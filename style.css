@@ -63,7 +63,7 @@ html, body {
     padding: 40px;
     border-radius: 15px;
     text-align: center;
-    width: min(820px, 94vw);
+    width: min(920px, 94vw);
 }
 
 .big-title {
@@ -91,143 +91,76 @@ html, body {
 }
 
 /* =========================================================
-   PAGE 1 GAME: BURNING NEON MASK (NEW)
+   PAGE 1 GAME: WORD SEARCH
    ========================================================= */
-
-.mask-game{
-    width: min(620px, 92vw);
-    aspect-ratio: 1 / 1;
-    position: relative;
+.wordsearch{
+    width: min(820px, 92vw);
     border-radius: 18px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-    isolation: isolate;
     border: 1px solid rgba(255,255,255,0.12);
-
     background:
-        radial-gradient(circle at 50% 45%, rgba(255,220,70,0.08), rgba(0,0,0,0.75) 62%),
-        radial-gradient(circle at 30% 25%, rgba(255,255,255,0.08), transparent 55%),
-        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.65));
+        radial-gradient(circle at 50% 45%, rgba(255,220,70,0.06), rgba(0,0,0,0.80) 62%),
+        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.70));
+    padding: 16px;
 }
 
-.mask-stage{
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-}
-
-.neon-mask{
-    position: relative;
-    width: 44%;
-    height: 56%;
-    transform: scale(0.7);
-    transition: transform 80ms linear;
-
-    background:
-        radial-gradient(circle at 50% 22%, rgba(255,244,188,0.98), rgba(255,214,64,0.88) 52%, rgba(199,142,0,0.78) 92%),
-        repeating-linear-gradient(128deg, rgba(0,0,0,0.14) 0 1px, transparent 1px 24px);
-
-    clip-path: polygon(
-        50% 0%,
-        72% 7%,
-        88% 20%,
-        96% 38%,
-        98% 56%,
-        92% 72%,
-        80% 86%,
-        64% 96%,
-        50% 100%,
-        36% 96%,
-        20% 86%,
-        8% 72%,
-        2% 56%,
-        4% 38%,
-        12% 20%,
-        28% 7%
-    );
-
-    border: 1px solid rgba(0,0,0,0.28);
-    box-shadow:
-        0 18px 40px rgba(0,0,0,0.46),
-        inset 0 0 0 1px rgba(255,255,255,0.18),
-        inset 0 -16px 28px rgba(0,0,0,0.18),
-        0 0 18px rgba(255,214,64,0.28),
-        0 0 38px rgba(255,214,64,0.18);
-
-    overflow: hidden;
-}
-
-.neon-mask::before{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        repeating-linear-gradient(22deg, rgba(0,0,0,0.18) 0 1px, transparent 1px 26px),
-        repeating-linear-gradient(124deg, rgba(0,0,0,0.14) 0 1px, transparent 1px 22px),
-        radial-gradient(circle at 30% 38%, rgba(0,0,0,0.14), transparent 52%),
-        radial-gradient(circle at 68% 36%, rgba(0,0,0,0.12), transparent 54%);
-    opacity: 0.35;
-    mix-blend-mode: multiply;
-    pointer-events: none;
-}
-
-.neon-mask::after{
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse at 33% 44%, rgba(0,0,0,0.70) 0 18%, rgba(0,0,0,0) 20%),
-        radial-gradient(ellipse at 67% 44%, rgba(0,0,0,0.70) 0 18%, rgba(0,0,0,0) 20%),
-        radial-gradient(ellipse at 50% 72%, rgba(0,0,0,0.45) 0 12%, rgba(0,0,0,0) 14%),
-        linear-gradient(180deg, rgba(255,255,255,0.22), transparent 38%),
-        linear-gradient(0deg, rgba(0,0,0,0.18), transparent 35%);
-    opacity: 0.78;
-    pointer-events: none;
-}
-
-.fire-layer{
-    position: absolute;
-    inset: 0;
-    pointer-events: none; /* flames themselves handle pointer events */
-}
-
-/* Flame particles (tappable) */
-.flame{
-    position: absolute;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    pointer-events: auto;
-    cursor: pointer;
-
-    background:
-        radial-gradient(circle at 30% 35%, rgba(255,255,255,0.95), rgba(255,180,0,0.9) 25%, rgba(255,60,0,0.85) 55%, rgba(120,0,0,0) 70%);
-
-    filter: drop-shadow(0 0 10px rgba(255,160,0,0.55));
-    animation: flameFlicker 260ms infinite alternate;
-}
-
-@keyframes flameFlicker{
-    from { transform: scale(0.92) translateY(0px); opacity: 0.95; }
-    to   { transform: scale(1.12) translateY(-2px); opacity: 0.78; }
-}
-
-/* HUD */
-.mask-hud{
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    top: 14px;
+.ws-top{
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    pointer-events: none;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
 }
 
-.hud-pill{
-    pointer-events: none;
+.ws-words{
+    text-align: left;
+    min-width: 250px;
+}
+
+.ws-title{
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+    letter-spacing: 0.4px;
+}
+
+.ws-list{
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+}
+
+.ws-word{
+    padding: 8px 10px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92);
+    font-weight: 700;
+    font-size: 0.92rem;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: 180ms ease;
+}
+
+.ws-word.found{
+    background: rgba(255,216,74,0.14);
+    border-color: rgba(255,216,74,0.5);
+    color: rgba(255,236,170,0.98);
+    text-decoration: line-through;
+    opacity: 0.95;
+}
+
+.ws-actions{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.ws-pill{
     padding: 10px 12px;
     border-radius: 999px;
     background: rgba(0,0,0,0.45);
@@ -239,66 +172,115 @@ html, body {
     -webkit-backdrop-filter: blur(4px);
 }
 
-/* GAME OVER / OPTIONS */
-.game-overlay{
-    position: absolute;
-    inset: 0;
+.ws-btn{
+    margin-top: 0;
+    padding: 10px 14px;
+}
+
+.ws-grid-wrap{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.ws-grid{
+    --n: 14;
+    display: grid;
+    grid-template-columns: repeat(var(--n), 1fr);
+    gap: 6px;
+    width: min(720px, 90vw);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none; /* IMPORTANT for dragging on mobile */
+}
+
+.ws-cell{
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(0,0,0,0.40);
+    color: rgba(255,255,255,0.92);
+    border-radius: 10px;
+    aspect-ratio: 1 / 1;
     display: grid;
     place-items: center;
-    background: rgba(0,0,0,0.82);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 260ms ease;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 120ms ease;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
 }
 
-.game-overlay.show{
-    opacity: 1;
-    pointer-events: auto;
+.ws-cell:hover{
+    background: rgba(0,0,0,0.52);
 }
 
-.game-card{
-    width: min(520px, 92%);
-    border-radius: 18px;
-    padding: 22px;
-    background: rgba(15,15,15,0.85);
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+.ws-cell.selected{
+    background: rgba(255,216,74,0.18);
+    border-color: rgba(255,216,74,0.55);
+    transform: translateY(-1px);
 }
 
-.game-card h2{
-    margin-bottom: 8px;
+.ws-cell.found{
+    background: rgba(255,216,74,0.28);
+    border-color: rgba(255,216,74,0.85);
+    color: rgba(20,15,0,0.95);
+    text-shadow: none;
+    cursor: default;
 }
 
-.game-card p{
-    opacity: 0.9;
-    margin-bottom: 14px;
+.ws-footer{
+    margin-top: 12px;
+    text-align: left;
+    opacity: 0.85;
+    font-size: 0.95rem;
 }
 
-.game-actions{
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
+.ws-note{
+    display: inline-block;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.10);
 }
 
-.game-actions button{
-    margin-top: 0;
-}
+/* =========================================================
+   YELLOW BLOOD DRIP / FLOOD (WIN TRANSITION)
+   ========================================================= */
 
-/* YELLOW FLOOD (win transition) */
-body.yellow-flood::before{
-    content: "";
+/* Overlay element in HTML */
+#bloodOverlay{
     position: fixed;
     inset: 0;
-    background: #ffd84a;
-    animation: yellowFlood 2s forwards;
+    pointer-events: none;
+    opacity: 0;
     z-index: 9999;
 }
 
-@keyframes yellowFlood{
-    0%{ opacity: 0; }
-    35%{ opacity: 1; }
-    100%{ opacity: 0; }
+#bloodOverlay.show{
+    opacity: 1;
+}
+
+/* Dripping top + flood down */
+body.blood-win #bloodOverlay{
+    background:
+        /* drips */
+        radial-gradient(circle at 8% 0%, rgba(255,216,74,0.98) 0 26px, rgba(255,216,74,0) 27px),
+        radial-gradient(circle at 18% 0%, rgba(255,216,74,0.98) 0 38px, rgba(255,216,74,0) 39px),
+        radial-gradient(circle at 34% 0%, rgba(255,216,74,0.98) 0 22px, rgba(255,216,74,0) 23px),
+        radial-gradient(circle at 52% 0%, rgba(255,216,74,0.98) 0 44px, rgba(255,216,74,0) 45px),
+        radial-gradient(circle at 66% 0%, rgba(255,216,74,0.98) 0 28px, rgba(255,216,74,0) 29px),
+        radial-gradient(circle at 82% 0%, rgba(255,216,74,0.98) 0 36px, rgba(255,216,74,0) 37px),
+        radial-gradient(circle at 92% 0%, rgba(255,216,74,0.98) 0 24px, rgba(255,216,74,0) 25px),
+        /* base gradient */
+        linear-gradient(180deg, rgba(255,216,74,0.98), rgba(255,216,74,0.98));
+    transform: translateY(-110%);
+    animation: bloodFlood 2.3s ease-in forwards;
+    filter: drop-shadow(0 8px 26px rgba(255,216,74,0.25));
+}
+
+@keyframes bloodFlood{
+    0%   { transform: translateY(-110%); }
+    55%  { transform: translateY(-10%); }
+    100% { transform: translateY(0%); }
 }
 
 /* ---------------- LIGHT PAGES ---------------- */
@@ -469,12 +451,11 @@ body.scroll-mode #page4{
         width: 100%;
     }
 
-    .neon-mask{
-        width: 54%;
-        height: 66%;
+    .ws-actions{
+        align-items: flex-start;
     }
 
     h1 { font-size: 1.3rem; }
     h2 { font-size: 1.1rem; }
-    h3 { font-size: 2rem; }
+    h3 { font-size: 1.15rem; }
 }
