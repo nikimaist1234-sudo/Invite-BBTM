@@ -3,11 +3,17 @@ const music = document.getElementById("bgMusic");
 
 let musicStarted = false;
 
-/* ---------------- Prevent touch scrolling while locked (mobile) ---------------- */
+/* ---------------- Prevent touch scrolling while locked (mobile)
+   BUT allow scrolling inside the wordsearch grid wrap
+---------------- */
 function preventScroll(e){
-  if(document.body.classList.contains("locked")){
-    e.preventDefault();
-  }
+  if(!document.body.classList.contains("locked")) return;
+
+  // Allow scroll inside the grid wrap (both directions)
+  const allowed = e.target?.closest?.(".ws-grid-wrap");
+  if(allowed) return;
+
+  e.preventDefault();
 }
 window.addEventListener("touchmove", preventScroll, { passive: false });
 
@@ -46,7 +52,7 @@ function startMusic(){
    PAGE 1 GAME: WORD SEARCH (Random 5 Words Every Load)
    - Drag across letters to select
    - Words can be forwards/backwards, any direction
-   - New grid each open + "New Grid" button
+   - New grid each open (NO guest button)
    - Win: yellow blood drip flood -> invite
    ========================================================= */
 
@@ -65,7 +71,7 @@ const WORD_POOL = [
 ];
 
 // Grid settings
-const GRID_SIZE = 14; // good for long words like ACQUAINTED / THEWEEKND
+const GRID_SIZE = 14;
 
 // Directions: 8-way
 const DIRS = [
@@ -79,20 +85,19 @@ const DIRS = [
   {dx: -1, dy: 1}   // down-left
 ];
 
-let wsGridEl, wsListEl, wsStatusEl, wsRestartBtn, bloodOverlayEl;
+let wsGridEl, wsListEl, wsStatusEl, bloodOverlayEl;
 
 let grid = [];
-let placed = [];      // [{label, word, cells:[idx...], found:false}]
-let activeSelection = [];  // indices
+let placed = [];            // [{label, word, cells:[idx...], found:false}]
+let activeSelection = [];   // indices
 let isDragging = false;
 let dragStartIdx = null;
-let dragDir = null;   // {dx,dy} once direction locked
+let dragDir = null;         // {dx,dy} once direction locked
 
 function cacheWordSearchEls(){
   wsGridEl = document.getElementById("wsGrid");
   wsListEl = document.getElementById("wordList");
   wsStatusEl = document.getElementById("wsStatus");
-  wsRestartBtn = document.getElementById("wsRestartBtn");
   bloodOverlayEl = document.getElementById("bloodOverlay");
 }
 
@@ -100,10 +105,7 @@ function startWordSearchGame(){
   cacheWordSearchEls();
   if(!wsGridEl || !wsListEl) return;
 
-  wsRestartBtn?.addEventListener("click", () => {
-    generateNewPuzzle();
-  });
-
+  // No visible "New Grid" button anymore — puzzle still random per load
   generateNewPuzzle();
 }
 
@@ -153,7 +155,6 @@ function generateNewPuzzle(){
 }
 
 function sanitizeWord(label){
-  // remove spaces and apostrophes, keep letters only
   return label
     .toUpperCase()
     .replace(/[^A-Z]/g, "");
@@ -174,7 +175,6 @@ function tryPlaceWord(word){
 
     if(endX < 0 || endX >= GRID_SIZE || endY < 0 || endY >= GRID_SIZE) continue;
 
-    // Check fit (allow overlap if same letter)
     let can = true;
     const cells = [];
     for(let i=0; i<word.length; i++){
@@ -191,12 +191,10 @@ function tryPlaceWord(word){
     }
     if(!can) continue;
 
-    // Place
     for(let i=0; i<word.length; i++){
       grid[cells[i]] = word[i];
     }
 
-    // Save cells on the matching placed item
     const p = placed.find(p => p.word === word && p.cells.length === 0);
     if(p) p.cells = cells;
 
@@ -231,7 +229,6 @@ function renderGrid(){
 }
 
 function wireGridInteractions(){
-  // Remove old listeners by replacing node? simplest: set a flag and rebind with event delegation
   wsGridEl.onpointerdown = handlePointerDown;
   wsGridEl.onpointermove = handlePointerMove;
   wsGridEl.onpointerup = handlePointerUp;
@@ -251,6 +248,9 @@ function handlePointerDown(e){
   dragDir = null;
   activeSelection = [idx];
 
+  // Disable pan while selecting (so dragging selects, not scrolls)
+  wsGridEl.classList.add("dragging");
+
   wsGridEl.setPointerCapture?.(e.pointerId);
 
   updateSelectionUI();
@@ -269,22 +269,18 @@ function handlePointerMove(e){
   if(Number.isNaN(idx)) return;
   if(isLockedCell(idx)) return;
 
-  // Ignore if already included
   if(activeSelection.includes(idx)) return;
 
   const last = activeSelection[activeSelection.length - 1];
 
-  // Determine adjacency
   const a = idxToXY(last);
   const b = idxToXY(idx);
   const dx = b.x - a.x;
   const dy = b.y - a.y;
 
-  // Must be adjacent
   if(Math.abs(dx) > 1 || Math.abs(dy) > 1) return;
   if(dx === 0 && dy === 0) return;
 
-  // Lock direction after 2nd cell
   if(activeSelection.length === 1){
     dragDir = { dx, dy };
   } else {
@@ -301,8 +297,8 @@ function handlePointerUp(e){
   if(!isDragging) return;
 
   isDragging = false;
+  wsGridEl.classList.remove("dragging");
 
-  // Build selected string
   const letters = activeSelection.map(i => grid[i]).join("");
   const reversed = letters.split("").reverse().join("");
 
@@ -310,17 +306,14 @@ function handlePointerUp(e){
   if(match){
     match.found = true;
 
-    // Lock cells as found (use the actual selected cells)
     const selectedCells = [...activeSelection];
     markFoundCells(selectedCells);
 
-    // Mark list item
     const li = wsListEl.querySelector(`li[data-word="${match.word}"]`);
     li?.classList.add("found");
 
     setStatus(`Found: ${match.label}`);
 
-    // Win?
     if(placed.every(p => p.found)){
       triggerBloodWin();
       return;
@@ -329,7 +322,6 @@ function handlePointerUp(e){
     setStatus("Nope — try another word");
   }
 
-  // Clear selection (but keep found locked)
   activeSelection = [];
   dragStartIdx = null;
   dragDir = null;
@@ -352,7 +344,6 @@ function isLockedCell(idx){
 }
 
 function updateSelectionUI(){
-  // remove old selected (except found)
   wsGridEl.querySelectorAll(".ws-cell.selected").forEach(c => c.classList.remove("selected"));
 
   for(const idx of activeSelection){
@@ -374,14 +365,12 @@ function setStatus(text){
 function triggerBloodWin(){
   setStatus("Unlocked…");
 
-  // show drip/flood
   document.body.classList.add("blood-win");
   if(bloodOverlayEl){
     bloodOverlayEl.classList.add("show");
     bloodOverlayEl.setAttribute("aria-hidden","false");
   }
 
-  // after animation, go to invite
   setTimeout(() => {
     document.body.classList.remove("blood-win");
     bloodOverlayEl?.classList.remove("show");
