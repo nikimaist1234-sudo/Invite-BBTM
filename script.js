@@ -21,7 +21,7 @@ function showOnlyPage(pageNumber){
 startBtn?.addEventListener("click", () => {
   showOnlyPage(1);
   startMusic();
-  startMaskFireGame();
+  startWordSearchGame();
 });
 
 /* ---------------- MUSIC ---------------- */
@@ -43,221 +43,351 @@ function startMusic(){
 }
 
 /* =========================================================
-   PAGE 1 GAME: BURNING NEON MASK
-   - Tap flames to extinguish before mask reaches full scale
-   - If fail: Try Again or View Invite
-   - If win: Yellow flood -> invite
+   PAGE 1 GAME: WORD SEARCH (Random 5 Words Every Load)
+   - Drag across letters to select
+   - Words can be forwards/backwards, any direction
+   - New grid each open + "New Grid" button
+   - Win: yellow blood drip flood -> invite
    ========================================================= */
 
-let maskGame = null;
-let maskEl = null;
-let fireLayerEl = null;
-let overlayEl = null;
-let heatLabelEl = null;
+const WORD_POOL = [
+  "Beauty",
+  "XO",
+  "Madness",
+  "The Weeknd",
+  "Illusion",
+  "Chaos",
+  "Desire",
+  "Tempation",   // keeping your spelling
+  "Acquainted",
+  "Addiction",
+  "Secrets"
+];
 
-let gameActive = false;
-let heat = 100;             // 0 = extinguished (win), 100 = fully burning
-let scale = 0.70;           // grows until fail threshold
-let tickGrow = null;
-let tickHeat = null;
-let tickSpawn = null;
+// Grid settings
+const GRID_SIZE = 14; // good for long words like ACQUAINTED / THEWEEKND
 
-const FAIL_SCALE = 1.25;
-const GROW_STEP = 0.010;     // growth per tick
-const GROW_MS = 60;
+// Directions: 8-way
+const DIRS = [
+  {dx: 1, dy: 0},   // right
+  {dx: -1, dy: 0},  // left
+  {dx: 0, dy: 1},   // down
+  {dx: 0, dy: -1},  // up
+  {dx: 1, dy: 1},   // down-right
+  {dx: -1, dy: -1}, // up-left
+  {dx: 1, dy: -1},  // up-right
+  {dx: -1, dy: 1}   // down-left
+];
 
-const PASSIVE_BURN = 1.6;    // heat reduction per second (game wins even if user taps some)
-const TAP_COOL = 7;          // heat reduction per flame tap
-const SPAWN_MS = 260;        // flame spawn rate
-const FLAME_LIFE = 1400;     // flame lifetime
+let wsGridEl, wsListEl, wsStatusEl, wsRestartBtn, bloodOverlayEl;
 
-function cacheMaskGameEls(){
-  maskGame = document.getElementById("maskGame");
-  maskEl = document.getElementById("neonMask");
-  fireLayerEl = document.getElementById("fireLayer");
-  overlayEl = document.getElementById("maskOverlay");
-  heatLabelEl = document.getElementById("heatValue");
+let grid = [];
+let placed = [];      // [{label, word, cells:[idx...], found:false}]
+let activeSelection = [];  // indices
+let isDragging = false;
+let dragStartIdx = null;
+let dragDir = null;   // {dx,dy} once direction locked
+
+function cacheWordSearchEls(){
+  wsGridEl = document.getElementById("wsGrid");
+  wsListEl = document.getElementById("wordList");
+  wsStatusEl = document.getElementById("wsStatus");
+  wsRestartBtn = document.getElementById("wsRestartBtn");
+  bloodOverlayEl = document.getElementById("bloodOverlay");
 }
 
-function ensureMaskGameMarkup(){
-  // If your index.html hasn’t been updated yet, this prevents crashing.
-  if(document.getElementById("maskGame")) return;
+function startWordSearchGame(){
+  cacheWordSearchEls();
+  if(!wsGridEl || !wsListEl) return;
 
-  const page1 = document.getElementById("page1");
-  if(!page1) return;
-
-  const gameArea = page1.querySelector(".game-area");
-  if(!gameArea) return;
-
-  gameArea.innerHTML = `
-    <p class="game-hint">Tap the flames to put the fire out before it consumes the mask</p>
-
-    <div class="mask-game" id="maskGame" aria-label="Burning mask game">
-      <div class="mask-hud">
-        <div class="hud-pill">Fire: <span id="heatValue">100</span>%</div>
-        <div class="hud-pill">Tap flames 🔥</div>
-      </div>
-
-      <div class="mask-stage">
-        <div class="fire-layer" id="fireLayer"></div>
-        <div class="neon-mask" id="neonMask"></div>
-      </div>
-
-      <div class="game-overlay" id="maskOverlay" aria-hidden="true">
-        <div class="game-card">
-          <h2 id="maskOverlayTitle">The fire consumed it...</h2>
-          <p id="maskOverlayDesc">Try again or skip straight to the invite.</p>
-          <div class="game-actions">
-            <button class="primary" id="retryBtn">Try Again</button>
-            <button id="viewBtn">View Invite</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function startMaskFireGame(){
-  ensureMaskGameMarkup();
-  cacheMaskGameEls();
-
-  if(!maskGame || !maskEl || !fireLayerEl || !overlayEl) return;
-
-  clearMaskTimers();
-
-  // reset state
-  gameActive = true;
-  heat = 100;
-  scale = 0.70;
-
-  fireLayerEl.innerHTML = "";
-  overlayEl.classList.remove("show");
-  overlayEl.setAttribute("aria-hidden", "true");
-
-  updateHeatHud();
-  maskEl.style.transform = `scale(${scale})`;
-
-  // wire buttons
-  const retryBtn = document.getElementById("retryBtn");
-  const viewBtn = document.getElementById("viewBtn");
-  retryBtn?.addEventListener("click", restartGame);
-  viewBtn?.addEventListener("click", finishGame);
-
-  // growth loop (fail if too large)
-  tickGrow = setInterval(() => {
-    if(!gameActive) return;
-    scale += GROW_STEP;
-    maskEl.style.transform = `scale(${scale})`;
-
-    if(scale >= FAIL_SCALE){
-      failGame();
-    }
-  }, GROW_MS);
-
-  // passive extinguish (so it always progresses)
-  tickHeat = setInterval(() => {
-    if(!gameActive) return;
-    heat = Math.max(0, heat - (PASSIVE_BURN / 5)); // 200ms ticks -> /5
-    updateHeatHud();
-    if(heat <= 0){
-      winGame();
-    }
-  }, 200);
-
-  // spawn tappable flames
-  tickSpawn = setInterval(() => {
-    if(!gameActive) return;
-    spawnFlame();
-  }, SPAWN_MS);
-}
-
-function spawnFlame(){
-  if(!fireLayerEl || !maskGame) return;
-
-  const flame = document.createElement("div");
-  flame.className = "flame";
-
-  // Spawn mostly around the mask area (center), but still varied
-  const rx = randFloat(18, 82);
-  const ry = randFloat(18, 82);
-
-  flame.style.left = rx + "%";
-  flame.style.top = ry + "%";
-
-  flame.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if(!gameActive) return;
-
-    // cool down
-    heat = Math.max(0, heat - TAP_COOL);
-    updateHeatHud();
-
-    // pop effect
-    flame.style.transform = "scale(1.55)";
-    flame.style.opacity = "0";
-    setTimeout(() => flame.remove(), 120);
-
-    if(heat <= 0){
-      winGame();
-    }
+  wsRestartBtn?.addEventListener("click", () => {
+    generateNewPuzzle();
   });
 
-  fireLayerEl.appendChild(flame);
-
-  setTimeout(() => {
-    flame.remove();
-  }, FLAME_LIFE);
+  generateNewPuzzle();
 }
 
-function updateHeatHud(){
-  if(heatLabelEl){
-    heatLabelEl.textContent = String(Math.round(heat));
+function generateNewPuzzle(){
+  // Reset visuals
+  document.body.classList.remove("blood-win");
+  bloodOverlayEl?.classList.remove("show");
+  if(bloodOverlayEl) bloodOverlayEl.setAttribute("aria-hidden","true");
+
+  // Pick random 5
+  const shuffled = [...WORD_POOL].sort(() => Math.random() - 0.5);
+  const chosen = shuffled.slice(0, 5);
+
+  // Build placement objects (sanitize words for grid)
+  placed = chosen.map(label => {
+    const word = sanitizeWord(label);
+    return { label, word, cells: [], found: false };
+  });
+
+  // Create empty grid
+  grid = new Array(GRID_SIZE * GRID_SIZE).fill("");
+
+  // Place words (try multiple attempts)
+  for(const item of placed){
+    const ok = tryPlaceWord(item.word);
+    if(!ok){
+      // If a placement fails (rare), regenerate the whole puzzle
+      return generateNewPuzzle();
+    }
+  }
+
+  // Fill remaining with random letters
+  for(let i=0; i<grid.length; i++){
+    if(!grid[i]){
+      grid[i] = randomLetter();
+    }
+  }
+
+  // Render list + grid
+  renderWordList();
+  renderGrid();
+
+  // Wire drag selection
+  wireGridInteractions();
+
+  setStatus("Drag to select letters");
+}
+
+function sanitizeWord(label){
+  // remove spaces and apostrophes, keep letters only
+  return label
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+}
+
+function tryPlaceWord(word){
+  const maxAttempts = 600;
+
+  for(let attempt=0; attempt<maxAttempts; attempt++){
+    const dir = DIRS[Math.floor(Math.random() * DIRS.length)];
+    const start = {
+      x: Math.floor(Math.random() * GRID_SIZE),
+      y: Math.floor(Math.random() * GRID_SIZE)
+    };
+
+    const endX = start.x + dir.dx * (word.length - 1);
+    const endY = start.y + dir.dy * (word.length - 1);
+
+    if(endX < 0 || endX >= GRID_SIZE || endY < 0 || endY >= GRID_SIZE) continue;
+
+    // Check fit (allow overlap if same letter)
+    let can = true;
+    const cells = [];
+    for(let i=0; i<word.length; i++){
+      const x = start.x + dir.dx * i;
+      const y = start.y + dir.dy * i;
+      const idx = xyToIdx(x,y);
+      const existing = grid[idx];
+      const letter = word[i];
+      if(existing && existing !== letter){
+        can = false;
+        break;
+      }
+      cells.push(idx);
+    }
+    if(!can) continue;
+
+    // Place
+    for(let i=0; i<word.length; i++){
+      grid[cells[i]] = word[i];
+    }
+
+    // Save cells on the matching placed item
+    const p = placed.find(p => p.word === word && p.cells.length === 0);
+    if(p) p.cells = cells;
+
+    return true;
+  }
+  return false;
+}
+
+function renderWordList(){
+  wsListEl.innerHTML = "";
+  for(const item of placed){
+    const li = document.createElement("li");
+    li.className = "ws-word";
+    li.dataset.word = item.word;
+    li.textContent = item.label;
+    wsListEl.appendChild(li);
   }
 }
 
-function failGame(){
-  if(!gameActive) return;
-  gameActive = false;
-  clearMaskTimers();
+function renderGrid(){
+  wsGridEl.innerHTML = "";
+  wsGridEl.style.setProperty("--n", GRID_SIZE);
 
-  if(overlayEl){
-    const title = document.getElementById("maskOverlayTitle");
-    const desc = document.getElementById("maskOverlayDesc");
-    if(title) title.textContent = "The fire consumed it...";
-    if(desc) desc.textContent = "Try again or skip straight to the invite.";
-    overlayEl.classList.add("show");
-    overlayEl.setAttribute("aria-hidden", "false");
+  for(let idx=0; idx<grid.length; idx++){
+    const cell = document.createElement("button");
+    cell.type = "button";
+    cell.className = "ws-cell";
+    cell.dataset.idx = String(idx);
+    cell.textContent = grid[idx];
+    wsGridEl.appendChild(cell);
   }
 }
 
-function winGame(){
-  if(!gameActive) return;
-  gameActive = false;
-  clearMaskTimers();
+function wireGridInteractions(){
+  // Remove old listeners by replacing node? simplest: set a flag and rebind with event delegation
+  wsGridEl.onpointerdown = handlePointerDown;
+  wsGridEl.onpointermove = handlePointerMove;
+  wsGridEl.onpointerup = handlePointerUp;
+  wsGridEl.onpointercancel = handlePointerUp;
+  wsGridEl.onlostpointercapture = handlePointerUp;
+}
 
-  // Yellow flood animation
-  document.body.classList.add("yellow-flood");
+function handlePointerDown(e){
+  const btn = e.target.closest(".ws-cell");
+  if(!btn) return;
 
-  // after flood, go to invite
+  const idx = Number(btn.dataset.idx);
+  if(isLockedCell(idx)) return;
+
+  isDragging = true;
+  dragStartIdx = idx;
+  dragDir = null;
+  activeSelection = [idx];
+
+  wsGridEl.setPointerCapture?.(e.pointerId);
+
+  updateSelectionUI();
+  setStatus("Selecting...");
+  e.preventDefault();
+}
+
+function handlePointerMove(e){
+  if(!isDragging) return;
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const btn = el?.closest?.(".ws-cell");
+  if(!btn) return;
+
+  const idx = Number(btn.dataset.idx);
+  if(Number.isNaN(idx)) return;
+  if(isLockedCell(idx)) return;
+
+  // Ignore if already included
+  if(activeSelection.includes(idx)) return;
+
+  const last = activeSelection[activeSelection.length - 1];
+
+  // Determine adjacency
+  const a = idxToXY(last);
+  const b = idxToXY(idx);
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+
+  // Must be adjacent
+  if(Math.abs(dx) > 1 || Math.abs(dy) > 1) return;
+  if(dx === 0 && dy === 0) return;
+
+  // Lock direction after 2nd cell
+  if(activeSelection.length === 1){
+    dragDir = { dx, dy };
+  } else {
+    if(!dragDir) return;
+    if(dx !== dragDir.dx || dy !== dragDir.dy) return;
+  }
+
+  activeSelection.push(idx);
+  updateSelectionUI();
+  e.preventDefault();
+}
+
+function handlePointerUp(e){
+  if(!isDragging) return;
+
+  isDragging = false;
+
+  // Build selected string
+  const letters = activeSelection.map(i => grid[i]).join("");
+  const reversed = letters.split("").reverse().join("");
+
+  const match = placed.find(p => !p.found && (p.word === letters || p.word === reversed));
+  if(match){
+    match.found = true;
+
+    // Lock cells as found (use the actual selected cells)
+    const selectedCells = [...activeSelection];
+    markFoundCells(selectedCells);
+
+    // Mark list item
+    const li = wsListEl.querySelector(`li[data-word="${match.word}"]`);
+    li?.classList.add("found");
+
+    setStatus(`Found: ${match.label}`);
+
+    // Win?
+    if(placed.every(p => p.found)){
+      triggerBloodWin();
+      return;
+    }
+  } else {
+    setStatus("Nope — try another word");
+  }
+
+  // Clear selection (but keep found locked)
+  activeSelection = [];
+  dragStartIdx = null;
+  dragDir = null;
+  clearSelectionUI();
+
+  e.preventDefault();
+}
+
+function markFoundCells(indices){
+  for(const idx of indices){
+    const cell = wsGridEl.querySelector(`.ws-cell[data-idx="${idx}"]`);
+    cell?.classList.add("found");
+    cell?.classList.remove("selected");
+  }
+}
+
+function isLockedCell(idx){
+  const cell = wsGridEl.querySelector(`.ws-cell[data-idx="${idx}"]`);
+  return cell?.classList.contains("found");
+}
+
+function updateSelectionUI(){
+  // remove old selected (except found)
+  wsGridEl.querySelectorAll(".ws-cell.selected").forEach(c => c.classList.remove("selected"));
+
+  for(const idx of activeSelection){
+    const cell = wsGridEl.querySelector(`.ws-cell[data-idx="${idx}"]`);
+    if(cell && !cell.classList.contains("found")){
+      cell.classList.add("selected");
+    }
+  }
+}
+
+function clearSelectionUI(){
+  wsGridEl.querySelectorAll(".ws-cell.selected").forEach(c => c.classList.remove("selected"));
+}
+
+function setStatus(text){
+  if(wsStatusEl) wsStatusEl.textContent = text;
+}
+
+function triggerBloodWin(){
+  setStatus("Unlocked…");
+
+  // show drip/flood
+  document.body.classList.add("blood-win");
+  if(bloodOverlayEl){
+    bloodOverlayEl.classList.add("show");
+    bloodOverlayEl.setAttribute("aria-hidden","false");
+  }
+
+  // after animation, go to invite
   setTimeout(() => {
-    document.body.classList.remove("yellow-flood");
+    document.body.classList.remove("blood-win");
+    bloodOverlayEl?.classList.remove("show");
+    if(bloodOverlayEl) bloodOverlayEl.setAttribute("aria-hidden","true");
     finishGame();
-  }, 1900);
-}
-
-function clearMaskTimers(){
-  if(tickGrow) clearInterval(tickGrow);
-  if(tickHeat) clearInterval(tickHeat);
-  if(tickSpawn) clearInterval(tickSpawn);
-  tickGrow = null;
-  tickHeat = null;
-  tickSpawn = null;
-}
-
-/* Buttons call these */
-function restartGame(){
-  startMaskFireGame();
+  }, 2300);
 }
 
 /* ---------------- FINISH: enable scroll from Show Up to end ---------------- */
@@ -272,6 +402,14 @@ function finishGame(){
 }
 
 /* ---------------- HELPERS ---------------- */
-function randFloat(min, max){
-  return Math.random() * (max - min) + min;
+function randomLetter(){
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  return alphabet[Math.floor(Math.random() * alphabet.length)];
+}
+
+function xyToIdx(x,y){
+  return y * GRID_SIZE + x;
+}
+function idxToXY(idx){
+  return { x: idx % GRID_SIZE, y: Math.floor(idx / GRID_SIZE) };
 }
