@@ -18,39 +18,31 @@
     </div>
 </section>
 
-<!-- PAGE 1 (GAME: Mirror Maze Puzzle) -->
+ <!-- PAGE 1 (GAME: Burning Mask) -->
 <section id="page1" class="page">
     <div class="overlay">
         <h1 class="big-title">You're Invited</h1>
         <h2>X'O Nights: Nikita Turns 21</h2>
 
         <div class="game-area">
-            <p class="game-hint">Drag and align the shards until the reflection become whole</p>
+            <p class="game-hint">Tap the flames to put the fire out before it consumes the mask</p>
 
-            <div class="mirror-wrap" id="mirrorWrap" aria-label="Mirror maze puzzle">
-                <div class="mirror-board" id="mirrorBoard">
-                    <!-- Targets (ghost outlines) -->
-                    <div class="targets" id="targets"></div>
-
-                    <!-- Pieces (draggable shards) -->
-                    <div class="pieces" id="pieces"></div>
-
-                    <!-- Yellow mask reveal -->
-                    <div class="yellow-mask" id="yellowMask" aria-hidden="true">
-                        <div class="mask-glow"></div>
-                        <div class="mask-shape"></div>
-                    </div>
+            <div class="mask-game" id="maskGame">
+                <div class="mask-container">
+                    <div class="fire-layer" id="fireLayer"></div>
+                    <div class="neon-mask" id="neonMask"></div>
                 </div>
 
-                <!-- Shatter canvas overlay -->
-                <canvas id="shatterCanvas" class="shatter-canvas" aria-hidden="true"></canvas>
+                <div class="game-over hidden" id="gameOver">
+                    <h2>The fire consumed it...</h2>
+                    <button onclick="restartGame()">Try Again</button>
+                    <button onclick="finishGame()">View Invite</button>
+                </div>
             </div>
-
-            <p class="micro-hint">Tip: Drag shards onto the faint outlines — they’ll snap when correct.</p>
         </div>
     </div>
 </section>
-
+    
 <!-- PAGE 2 -->
 <section id="page2" class="page light-page">
     <div class="two-column">
@@ -126,3 +118,4 @@
 <script src="script.js"></script>
 </body>
 </html>
+
