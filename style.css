@@ -92,6 +92,8 @@ html, body {
 
 /* =========================================================
    PAGE 1 GAME: WORD SEARCH
+   - Smaller grid on mobile
+   - Scrollable both directions
    ========================================================= */
 .wordsearch{
     width: min(820px, 92vw);
@@ -172,46 +174,59 @@ html, body {
     -webkit-backdrop-filter: blur(4px);
 }
 
-.ws-btn{
-    margin-top: 0;
-    padding: 10px 14px;
-}
-
+/* SCROLLABLE WRAP (both directions) */
 .ws-grid-wrap{
     width: 100%;
-    display: flex;
-    justify-content: center;
+    max-width: 100%;
+    overflow: auto;                 /* enables left/right + up/down */
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(0,0,0,0.18);
+    padding: 10px;
+
+    /* keeps the grid from exploding the layout on phones */
+    max-height: min(62vh, 520px);
 }
 
+/* The grid should size to its content, not the screen */
 .ws-grid{
     --n: 14;
+    --cell: 44px;                   /* desktop cell size */
     display: grid;
-    grid-template-columns: repeat(var(--n), 1fr);
+    grid-template-columns: repeat(var(--n), var(--cell));
     gap: 6px;
-    width: min(720px, 92vw);
+    width: max-content;             /* key: allows scrolling instead of squishing */
     user-select: none;
     -webkit-user-select: none;
+
+    /* allow scrolling when not dragging */
+    touch-action: pan-x pan-y;
+}
+
+/* while dragging, we disable pan so selection is smooth */
+.ws-grid.dragging{
     touch-action: none;
-    margin: 0 auto;
 }
 
 .ws-cell{
+    width: var(--cell);
+    height: var(--cell);
     border: 1px solid rgba(255,255,255,0.14);
     background: rgba(0,0,0,0.40);
     color: rgba(255,255,255,0.92);
     border-radius: 10px;
-    aspect-ratio: 1 / 1;
     display: grid;
     place-items: center;
     font-weight: 900;
-
-    /* ✅ scales down smoothly on phones */
-    font-size: clamp(10px, 2.6vw, 16px);
-    letter-spacing: 0.25px;
-
+    letter-spacing: 0.5px;
     cursor: pointer;
     transition: 120ms ease;
     box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+
+    /* smaller letters relative to cell */
+    font-size: calc(var(--cell) * 0.46);
+    line-height: 1;
     padding: 0;
 }
 
@@ -251,8 +266,6 @@ html, body {
 /* =========================================================
    YELLOW BLOOD DRIP / FLOOD (WIN TRANSITION)
    ========================================================= */
-
-/* Overlay element in HTML */
 #bloodOverlay{
     position: fixed;
     inset: 0;
@@ -265,10 +278,8 @@ html, body {
     opacity: 1;
 }
 
-/* Dripping top + flood down */
 body.blood-win #bloodOverlay{
     background:
-        /* drips */
         radial-gradient(circle at 8% 0%, rgba(255,216,74,0.98) 0 26px, rgba(255,216,74,0) 27px),
         radial-gradient(circle at 18% 0%, rgba(255,216,74,0.98) 0 38px, rgba(255,216,74,0) 39px),
         radial-gradient(circle at 34% 0%, rgba(255,216,74,0.98) 0 22px, rgba(255,216,74,0) 23px),
@@ -276,7 +287,6 @@ body.blood-win #bloodOverlay{
         radial-gradient(circle at 66% 0%, rgba(255,216,74,0.98) 0 28px, rgba(255,216,74,0) 29px),
         radial-gradient(circle at 82% 0%, rgba(255,216,74,0.98) 0 36px, rgba(255,216,74,0) 37px),
         radial-gradient(circle at 92% 0%, rgba(255,216,74,0.98) 0 24px, rgba(255,216,74,0) 25px),
-        /* base gradient */
         linear-gradient(180deg, rgba(255,216,74,0.98), rgba(255,216,74,0.98));
     transform: translateY(-110%);
     animation: bloodFlood 2.3s ease-in forwards;
@@ -399,9 +409,6 @@ body.scroll-mode{
     overflow-y: auto;
 }
 
-/* When scroll mode is on:
-   - hide the intro pages
-   - stack pages 2-4 normally and make them visible */
 body.scroll-mode #page0,
 body.scroll-mode #page1{
     display: none;
@@ -430,56 +437,21 @@ body.scroll-mode #page4{
 /* ---------------- MOBILE RESPONSIVE ---------------- */
 @media (max-width: 768px) {
 
-    @media (max-width: 768px) {
-
-    /* ...keep your existing mobile rules... */
-
-    .wordsearch{
-        width: 96vw;
-        padding: 12px;
-    }
-
-    .ws-grid{
-        width: 96vw;     /* ✅ force full phone width */
-        max-width: 96vw; /* ✅ prevent overflow */
-        gap: 3px;        /* ✅ biggest fix for fitting */
-    }
-
-    .ws-cell{
-        border-radius: 7px;
-        font-size: clamp(9px, 2.9vw, 14px);
-        letter-spacing: 0.15px;
-    }
-
-    .ws-top{
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    .ws-list{
-        gap: 6px 8px;
-    }
-
-    .ws-word{
-        font-size: 0.85rem;
-        padding: 7px 9px;
-    }
-}
     .page {
         padding: 20px;
         min-height: 100vh;
     }
 
     .overlay{
-        padding: 26px;
+        padding: 22px;
     }
 
     .big-title {
-        font-size: 2.4rem;
+        font-size: 2.25rem;
     }
 
     .game-hint{
-        font-size: 1.15rem;
+        font-size: 1.05rem;
     }
 
     .two-column {
@@ -494,6 +466,27 @@ body.scroll-mode #page4{
 
     .ws-actions{
         align-items: flex-start;
+    }
+
+    /* MUCH smaller grid on phones */
+    .ws-grid{
+        --cell: 26px;  /* smaller cells */
+        gap: 4px;
+    }
+
+    .ws-cell{
+        border-radius: 8px;
+        font-size: calc(var(--cell) * 0.50);
+    }
+
+    .wordsearch{
+        width: min(860px, 96vw);
+        padding: 12px;
+    }
+
+    .ws-grid-wrap{
+        padding: 8px;
+        max-height: min(58vh, 420px);
     }
 
     h1 { font-size: 1.3rem; }
