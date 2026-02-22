@@ -18,31 +18,41 @@
     </div>
 </section>
 
- <!-- PAGE 1 (GAME: Burning Mask) -->
+<!-- PAGE 1 (GAME: Word Search) -->
 <section id="page1" class="page">
     <div class="overlay">
         <h1 class="big-title">You're Invited</h1>
         <h2>X'O Nights: Nikita Turns 21</h2>
 
         <div class="game-area">
-            <p class="game-hint">Tap the flames to put the fire out before it consumes the mask</p>
+            <p class="game-hint">Find the hidden words — drag across letters to select.</p>
+            <p class="micro-hint">Find all 5 to unlock.</p>
 
-            <div class="mask-game" id="maskGame">
-                <div class="mask-container">
-                    <div class="fire-layer" id="fireLayer"></div>
-                    <div class="neon-mask" id="neonMask"></div>
+            <div class="wordsearch" id="wordSearch">
+                <div class="ws-top">
+                    <div class="ws-words">
+                        <h3 class="ws-title">Find (5)</h3>
+                        <ul id="wordList" class="ws-list"></ul>
+                    </div>
+
+                    <div class="ws-actions">
+                        <div class="ws-pill" id="wsStatus">Drag to select letters</div>
+                        <button class="primary ws-btn" id="wsRestartBtn" type="button">New Grid</button>
+                    </div>
                 </div>
 
-                <div class="game-over hidden" id="gameOver">
-                    <h2>The fire consumed it...</h2>
-                    <button onclick="restartGame()">Try Again</button>
-                    <button onclick="finishGame()">View Invite</button>
+                <div class="ws-grid-wrap">
+                    <div class="ws-grid" id="wsGrid" aria-label="Word search grid"></div>
+                </div>
+
+                <div class="ws-footer">
+                    <span class="ws-note">Tip: You can select forwards or backwards.</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
-    
+
 <!-- PAGE 2 -->
 <section id="page2" class="page light-page">
     <div class="two-column">
@@ -112,10 +122,12 @@
     </footer>
 </section>
 
+<!-- Blood overlay (used on win) -->
+<div id="bloodOverlay" aria-hidden="true"></div>
+
 <!-- Audio -->
 <audio id="bgMusic" src="Cant feel my face.mp3" preload="auto"></audio>
 
 <script src="script.js"></script>
 </body>
 </html>
-
