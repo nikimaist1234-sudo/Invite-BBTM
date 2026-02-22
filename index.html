@@ -37,16 +37,16 @@
 
                     <div class="ws-actions">
                         <div class="ws-pill" id="wsStatus">Drag to select letters</div>
-                        <button class="primary ws-btn" id="wsRestartBtn" type="button">New Grid</button>
+                        <!-- New Grid button removed (guests shouldn't see it) -->
                     </div>
                 </div>
 
-                <div class="ws-grid-wrap">
+                <div class="ws-grid-wrap" id="wsGridWrap" aria-label="Scrollable word search area">
                     <div class="ws-grid" id="wsGrid" aria-label="Word search grid"></div>
                 </div>
 
                 <div class="ws-footer">
-                    <span class="ws-note">Tip: You can select forwards or backwards.</span>
+                    <span class="ws-note">Tip: You can scroll the grid, then drag across letters to select.</span>
                 </div>
             </div>
         </div>
