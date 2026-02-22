@@ -91,212 +91,112 @@ html, body {
 }
 
 /* =========================================================
-   PAGE 1 GAME: WORD SEARCH
-   - Smaller grid on mobile
-   - Scrollable both directions
+   PAGE 1 GAME: NEON SPIRAL SPIN
+   - Drag in circles to spin
+   - Spin fast enough -> fly/zoom -> whole page spins -> unlock invite
    ========================================================= */
-.wordsearch{
+
+.spiral-container{
+    margin-top: 18px;
     width: min(820px, 92vw);
+    height: 360px;
+    display: grid;
+    place-items: center;
     border-radius: 18px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.45);
     border: 1px solid rgba(255,255,255,0.12);
     background:
-        radial-gradient(circle at 50% 45%, rgba(255,220,70,0.06), rgba(0,0,0,0.80) 62%),
+        radial-gradient(circle at 50% 45%, rgba(255,220,70,0.08), rgba(0,0,0,0.82) 62%),
         linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.70));
     padding: 16px;
+    position: relative;
 }
 
-.ws-top{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 14px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
+.spiral{
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    position: relative;
 
-.ws-words{
-    text-align: left;
-    min-width: 250px;
-}
-
-.ws-title{
-    font-size: 1.15rem;
-    margin-bottom: 8px;
-    letter-spacing: 0.4px;
-}
-
-.ws-list{
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 10px;
-}
-
-.ws-word{
-    padding: 8px 10px;
-    border-radius: 999px;
-    background: rgba(0,0,0,0.45);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.92);
-    font-weight: 700;
-    font-size: 0.92rem;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: 180ms ease;
-}
-
-.ws-word.found{
-    background: rgba(255,216,74,0.14);
-    border-color: rgba(255,216,74,0.5);
-    color: rgba(255,236,170,0.98);
-    text-decoration: line-through;
-    opacity: 0.95;
-}
-
-.ws-actions{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-end;
-}
-
-.ws-pill{
-    padding: 10px 12px;
-    border-radius: 999px;
-    background: rgba(0,0,0,0.45);
-    border: 1px solid rgba(255,255,255,0.14);
-    color: rgba(255,255,255,0.92);
-    font-weight: 700;
-    font-size: 0.95rem;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-/* SCROLLABLE WRAP (both directions) */
-.ws-grid-wrap{
-    width: 100%;
-    max-width: 100%;
-    overflow: auto;                 /* enables left/right + up/down */
-    -webkit-overflow-scrolling: touch;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(0,0,0,0.18);
-    padding: 10px;
-
-    /* keeps the grid from exploding the layout on phones */
-    max-height: min(62vh, 520px);
-}
-
-/* The grid should size to its content, not the screen */
-.ws-grid{
-    --n: 14;
-    --cell: 44px;                   /* desktop cell size */
-    display: grid;
-    grid-template-columns: repeat(var(--n), var(--cell));
-    gap: 6px;
-    width: max-content;             /* key: allows scrolling instead of squishing */
+    cursor: grab;
     user-select: none;
     -webkit-user-select: none;
+    touch-action: none; /* important: allow smooth spinning on mobile */
 
-    /* allow scrolling when not dragging */
-    touch-action: pan-x pan-y;
-}
-
-/* while dragging, we disable pan so selection is smooth */
-.ws-grid.dragging{
-    touch-action: none;
-}
-
-.ws-cell{
-    width: var(--cell);
-    height: var(--cell);
-    border: 1px solid rgba(255,255,255,0.14);
-    background: rgba(0,0,0,0.40);
-    color: rgba(255,255,255,0.92);
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    font-weight: 900;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: 120ms ease;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
-
-    /* smaller letters relative to cell */
-    font-size: calc(var(--cell) * 0.46);
-    line-height: 1;
-    padding: 0;
-}
-
-.ws-cell:hover{
-    background: rgba(0,0,0,0.52);
-}
-
-.ws-cell.selected{
-    background: rgba(255,216,74,0.18);
-    border-color: rgba(255,216,74,0.55);
-    transform: translateY(-1px);
-}
-
-.ws-cell.found{
-    background: rgba(255,216,74,0.28);
-    border-color: rgba(255,216,74,0.85);
-    color: rgba(20,15,0,0.95);
-    text-shadow: none;
-    cursor: default;
-}
-
-.ws-footer{
-    margin-top: 12px;
-    text-align: left;
-    opacity: 0.85;
-    font-size: 0.95rem;
-}
-
-.ws-note{
-    display: inline-block;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.10);
-}
-
-/* =========================================================
-   YELLOW BLOOD DRIP / FLOOD (WIN TRANSITION)
-   ========================================================= */
-#bloodOverlay{
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0;
-    z-index: 9999;
-}
-
-#bloodOverlay.show{
-    opacity: 1;
-}
-
-body.blood-win #bloodOverlay{
+    /* Spiral look */
     background:
-        radial-gradient(circle at 8% 0%, rgba(255,216,74,0.98) 0 26px, rgba(255,216,74,0) 27px),
-        radial-gradient(circle at 18% 0%, rgba(255,216,74,0.98) 0 38px, rgba(255,216,74,0) 39px),
-        radial-gradient(circle at 34% 0%, rgba(255,216,74,0.98) 0 22px, rgba(255,216,74,0) 23px),
-        radial-gradient(circle at 52% 0%, rgba(255,216,74,0.98) 0 44px, rgba(255,216,74,0) 45px),
-        radial-gradient(circle at 66% 0%, rgba(255,216,74,0.98) 0 28px, rgba(255,216,74,0) 29px),
-        radial-gradient(circle at 82% 0%, rgba(255,216,74,0.98) 0 36px, rgba(255,216,74,0) 37px),
-        radial-gradient(circle at 92% 0%, rgba(255,216,74,0.98) 0 24px, rgba(255,216,74,0) 25px),
-        linear-gradient(180deg, rgba(255,216,74,0.98), rgba(255,216,74,0.98));
-    transform: translateY(-110%);
-    animation: bloodFlood 2.3s ease-in forwards;
-    filter: drop-shadow(0 8px 26px rgba(255,216,74,0.25));
+        repeating-conic-gradient(
+            rgba(255, 216, 74, 1) 0deg 12deg,
+            rgba(255, 216, 74, 0.08) 12deg 24deg
+        );
+
+    /* Neon glow */
+    box-shadow:
+        0 0 18px rgba(255,216,74,0.75),
+        0 0 50px rgba(255,216,74,0.45),
+        0 0 95px rgba(255,216,74,0.25),
+        inset 0 0 26px rgba(255,216,74,0.6);
+
+    /* subtle flicker */
+    animation: neonFlicker 2.2s infinite ease-in-out;
+    transition: transform 0.06s linear;
 }
 
-@keyframes bloodFlood{
-    0%   { transform: translateY(-110%); }
-    55%  { transform: translateY(-10%); }
-    100% { transform: translateY(0%); }
+.spiral:active{
+    cursor: grabbing;
+}
+
+@keyframes neonFlicker{
+    0%, 100% { filter: brightness(1); }
+    45%      { filter: brightness(1.08); }
+    55%      { filter: brightness(0.95); }
+    72%      { filter: brightness(1.12); }
+}
+
+/* Spiral “flies” forward and fills screen */
+.spiral.spinning-fast{
+    animation: spiralFly 1.35s ease-in forwards;
+}
+
+@keyframes spiralFly{
+    0%{
+        transform: rotate(var(--r, 0deg)) scale(1);
+        opacity: 1;
+    }
+    45%{
+        transform: rotate(calc(var(--r, 0deg) + 720deg)) scale(4.2);
+        opacity: 1;
+    }
+    100%{
+        transform: rotate(calc(var(--r, 0deg) + 1440deg)) scale(14);
+        opacity: 0;
+    }
+}
+
+/* Whole page spins during unlock */
+body.page-spin #page1{
+    transform-origin: center center;
+    animation: pageSpin 1.35s ease-in forwards;
+}
+
+@keyframes pageSpin{
+    0%   { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(360deg) scale(1.02); }
+}
+
+/* Optional “unlock pulse” text style (if you use status pill later) */
+.spiral-status{
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92);
+    font-weight: 700;
+    font-size: 0.95rem;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
 /* ---------------- LIGHT PAGES ---------------- */
@@ -464,29 +364,15 @@ body.scroll-mode #page4{
         width: 100%;
     }
 
-    .ws-actions{
-        align-items: flex-start;
-    }
-
-    /* MUCH smaller grid on phones */
-    .ws-grid{
-        --cell: 26px;  /* smaller cells */
-        gap: 4px;
-    }
-
-    .ws-cell{
-        border-radius: 8px;
-        font-size: calc(var(--cell) * 0.50);
-    }
-
-    .wordsearch{
-        width: min(860px, 96vw);
+    .spiral-container{
+        height: 320px;
         padding: 12px;
+        width: min(860px, 96vw);
     }
 
-    .ws-grid-wrap{
-        padding: 8px;
-        max-height: min(58vh, 420px);
+    .spiral{
+        width: 210px;
+        height: 210px;
     }
 
     h1 { font-size: 1.3rem; }
