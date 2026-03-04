@@ -14,7 +14,7 @@
     <div class="overlay volume-overlay">
         <h1 class="big-title">Please turn your volume up</h1>
         <h2>for a full experience 🔊</h2>
-        <button class="primary" id="startBtn">I'm ready</button>
+        <button class="primary" id="startBtn" type="button">I'm ready</button>
     </div>
 </section>
 
@@ -31,9 +31,6 @@
             <div class="spiral-container">
                 <div class="spiral" id="neonSpiral"></div>
             </div>
-
-            <!-- (optional) You can add a progress label later if you want -->
-            <!-- <div class="spiral-status" id="spinStatus">Spin power: 0%</div> -->
         </div>
     </div>
 </section>
@@ -61,12 +58,12 @@
     </div>
 </section>
 
-<!-- PAGE 3 -->
+<!-- PAGE 3 (layout/font style like Trilogy page 3, writing unchanged) -->
 <section id="page3" class="page light-page dress-layout">
     <div class="two-column">
         <div class="left">
             <img src="BBTM.jpg" alt="Beauty Behind The Madness Album">
-            <p class="tagline">Sunlight through the chaos</p>
+            <p class="tagline"><strong>Sunlight through the chaos</strong></p>
         </div>
 
         <div class="right text-left">
@@ -86,25 +83,139 @@
     </div>
 </section>
 
-<!-- PAGE 4 -->
+<!-- PAGE 4 (layout like Trilogy page 4 + updated quiz teaser text) -->
 <section id="page4" class="page light-page contact-layout">
-    <div class="two-column">
-        <div class="left text-left">
-            <h1 class="big-contact">Contact Details</h1>
-            <p>Contact Nikita for more information</p>
-        </div>
+    <div class="page4-content">
+        <div class="two-column">
+            <div class="left text-left">
+                <h1 class="big-contact">Contact Details</h1>
+                <p>Contact Nikita for more information</p>
+            </div>
 
-        <div class="right text-left">
-            <h2>Phone Number</h2>
-            <p>0813270172</p>
+            <div class="right text-left">
+                <div class="contact-lines">
+                    <p class="contact-line">
+                        <span class="label">Phone Number</span><span class="colon">:</span>
+                        <span class="value">0813270172</span>
+                    </p>
 
-            <p><strong>RSVP:</strong> There is none, you have to come</p>
+                    <p class="contact-line">
+                        <span class="label">RSVP</span><span class="colon">:</span>
+                        <span class="value">There is none, you have to come</span>
+                    </p>
+                </div>
+
+                <br><br>
+
+                <div class="quiz-teaser">
+                    <h2 class="quiz-teaser-title">
+                        Find out what song you are in <span class="quiz-album">Beauty Behind the Madness</span>
+                    </h2>
+                    <p class="quiz-teaser-sub">Participate if you want</p>
+                    <button class="quiz-play-btn" id="openQuizBtn" type="button">Click to play</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <footer class="dark-footer">
         XO till we overdose
     </footer>
+</section>
+
+<!-- QUIZ SCREEN -->
+<section id="pageQuiz" class="quiz-screen" aria-hidden="true">
+    <div class="quiz-inner">
+        <button class="quiz-back-btn" id="quizBackBtn" type="button">← Back to invite</button>
+
+        <h1 class="quiz-title">Which <span class="quiz-album">Beauty Behind the Madness</span> song are you?</h1>
+        <p class="quiz-subtitle">6 quick picks. Soft reveal. Dark vibes.</p>
+
+        <form id="quizForm" class="quiz-form" autocomplete="off">
+            <div class="quiz-q">
+                <h3>Your name</h3>
+                <input
+                    id="guestName"
+                    name="guestName"
+                    type="text"
+                    class="quiz-name"
+                    placeholder="Type your name…"
+                    maxlength="30"
+                    required
+                />
+            </div>
+
+            <div class="quiz-q">
+                <h3>1) If you had to pick one guilty-pleasure snack at midnight, what is it?</h3>
+                <label><input type="radio" name="q1" value="often"> Chips.</label>
+                <label><input type="radio" name="q1" value="losers"> Chocolate.</label>
+                <label><input type="radio" name="q1" value="earned-it"> Ice cream.</label>
+                <label><input type="radio" name="q1" value="in-the-night"> Cookies.</label>
+                <label><input type="radio" name="q1" value="as-you-are"> Popcorn.</label>
+            </div>
+
+            <div class="quiz-q">
+                <h3>2) Which language would you love to learn just for fun?</h3>
+                <label><input type="radio" name="q2" value="often"> French.</label>
+                <label><input type="radio" name="q2" value="losers"> Spanish.</label>
+                <label><input type="radio" name="q2" value="earned-it"> Italian.</label>
+                <label><input type="radio" name="q2" value="in-the-night"> Japanese.</label>
+                <label><input type="radio" name="q2" value="as-you-are"> Hindi.</label>
+            </div>
+
+            <div class="quiz-q">
+                <h3>3) Favorite genre of music?</h3>
+                <label><input type="radio" name="q3" value="often"> Pop.</label>
+                <label><input type="radio" name="q3" value="losers"> R&amp;B.</label>
+                <label><input type="radio" name="q3" value="earned-it"> 80’s and 90’s.</label>
+                <label><input type="radio" name="q3" value="in-the-night"> Rap.</label>
+                <label><input type="radio" name="q3" value="as-you-are"> Amapiano.</label>
+            </div>
+
+            <div class="quiz-q">
+                <h3>4) Which one of these cities would you like to visit the most?</h3>
+                <label><input type="radio" name="q4" value="often"> Tokyo.</label>
+                <label><input type="radio" name="q4" value="losers"> New York.</label>
+                <label><input type="radio" name="q4" value="earned-it"> Rio.</label>
+                <label><input type="radio" name="q4" value="in-the-night"> Paris.</label>
+                <label><input type="radio" name="q4" value="as-you-are"> Italy.</label>
+            </div>
+
+            <div class="quiz-q">
+                <h3>5) Pick a colour</h3>
+                <label><input type="radio" name="q5" value="often"> Black.</label>
+                <label><input type="radio" name="q5" value="losers"> White.</label>
+                <label><input type="radio" name="q5" value="earned-it"> Red.</label>
+                <label><input type="radio" name="q5" value="in-the-night"> Blue.</label>
+                <label><input type="radio" name="q5" value="as-you-are"> Yellow.</label>
+            </div>
+
+            <div class="quiz-q">
+                <h3>6) Pick a lyric</h3>
+                <label><input type="radio" name="q6" value="often"> “I want you to stay…”</label>
+                <label><input type="radio" name="q6" value="losers"> “We’re all… losers…”</label>
+                <label><input type="radio" name="q6" value="earned-it"> “You earned it…”</label>
+                <label><input type="radio" name="q6" value="in-the-night"> “In the night…”</label>
+                <label><input type="radio" name="q6" value="as-you-are"> “As you are…”</label>
+            </div>
+
+            <button class="quiz-finish-btn" id="quizFinishBtn" type="button">Reveal my song</button>
+        </form>
+
+        <div class="quiz-result" id="quizResult" aria-live="polite">
+            <div class="quiz-result-inner fade-soft" id="quizResultInner"></div>
+
+            <img id="resultCover" class="result-cover" alt="Song cover" />
+            <p id="resultBlurb" class="result-blurb"></p>
+
+            <div class="quiz-result-actions">
+                <button class="quiz-retry-btn" id="quizRetryBtn" type="button">Try again</button>
+                <button class="quiz-close-btn" id="quizCloseBtn" type="button">Back to invite</button>
+            </div>
+        </div>
+
+        <div class="quiz-overlay" id="quizOverlay"></div>
+    </div>
 </section>
 
 <!-- Bright yellow flood overlay (used on win) -->
@@ -114,9 +225,9 @@
 <div id="bloodOverlay" aria-hidden="true"></div>
 
 <!-- Audio -->
+<audio id="resultAudio" preload="auto"></audio>
 <audio id="bgMusic" src="Cant feel my face.mp3" preload="auto"></audio>
 
 <script src="script.js"></script>
 </body>
 </html>
-
