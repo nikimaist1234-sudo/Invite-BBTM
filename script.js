@@ -385,8 +385,7 @@ function showQuizResult({ chosen, guestName }) {
 
   if (quizResultInner) {
     quizResultInner.innerHTML = `
-      <h2>${guestName}, your song is <span class="quiz-album">${pretty}</span></h2>
-      <p>Don’t argue. The vibe picked you.</p>
+      <h2>${guestName}, you are <span class="quiz-album">${pretty}</span></h2>
     `;
     requestAnimationFrame(() => quizResultInner.classList.add("show"));
   }
@@ -399,6 +398,26 @@ function showQuizResult({ chosen, guestName }) {
   if (resultBlurb) {
     resultBlurb.textContent = SONG_BLURB[chosen] || "";
   }
+
+  // auto scroll so the whole reveal section is visible (heading + image + buttons)
+if (quizResult) {
+  setTimeout(() => {
+    // 1) Center the whole reveal card in the viewport
+    quizResult.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // 2) After the smooth scroll starts, do a tiny adjustment so the bottom buttons
+    // are more likely to be visible on smaller screens
+    setTimeout(() => {
+      const rect = quizResult.getBoundingClientRect();
+      const pad = 16; // small safety padding
+      const overflowBottom = rect.bottom - (window.innerHeight - pad);
+
+      if (overflowBottom > 0) {
+        window.scrollBy({ top: overflowBottom, behavior: "smooth" });
+      }
+    }, 350);
+  }, 80);
+}
 
   // play result mp3 (exact filename spelling)
   if (resultAudio) {
