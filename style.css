@@ -72,7 +72,7 @@ html, body {
 }
 
 .invite-title{
-    font-size: 3rem;
+    font-size: 2rem;
 }
 
 /* ---------------- GAME AREA ---------------- */
@@ -399,3 +399,4 @@ body.scroll-mode #page4{
     h2 { font-size: 1.1rem; }
     h3 { font-size: 1.15rem; }
 }
+
