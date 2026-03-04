@@ -49,42 +49,65 @@ function startMusic(){
 }
 
 /* =========================================================
-   PAGE 1 GAME: NEON SPIRAL SPIN
-   - Guests spin spiral (drag in circles)
-   - If spin speed is high enough -> fly/zoom + whole page spin
-   - Then unlock invite (scroll-mode)
+   PAGE 1 GAME (UPDATED): MOMENTUM + BUILD-UP
+   - First swipe starts slow
+   - Keep swiping builds speed (momentum)
+   - Must maintain fast spin long enough to fill "unlock progress"
+   - On unlock: page spins + spiral fills screen + bright yellow flood (2s) -> reveal invite
    ========================================================= */
 
 let spiralEl = null;
+let yellowFlashEl = null;
+
 let unlocked = false;
 
-let rotation = 0;      // degrees
-let velocity = 0;      // rough speed score
+let rotation = 0;       // degrees (visual)
+let spinSpeed = 0;      // degrees per second (momentum)
+let progress = 0;       // 0..1 unlock meter
 
+let isDragging = false;
 let lastAngle = null;
 let lastTime = null;
 
+let rafId = null;
+let rafLast = null;
+
 function startSpiralGame(){
   spiralEl = document.getElementById("neonSpiral");
+  yellowFlashEl = document.getElementById("yellowFlash");
+
   if(!spiralEl) return;
 
+  // reset
   unlocked = false;
   rotation = 0;
-  velocity = 0;
+  spinSpeed = 0;
+  progress = 0;
+
+  isDragging = false;
   lastAngle = null;
   lastTime = null;
 
   spiralEl.style.setProperty("--r", "0deg");
   spiralEl.style.transform = "rotate(0deg)";
   spiralEl.classList.remove("spinning-fast");
-  document.body.classList.remove("page-spin");
 
+  document.body.classList.remove("page-spin");
+  yellowFlashEl?.classList.remove("show");
+
+  // listeners
   spiralEl.addEventListener("pointerdown", onSpiralDown);
+
+  // start animation loop
+  cancelAnimationFrame(rafId);
+  rafLast = performance.now();
+  rafId = requestAnimationFrame(tick);
 }
 
 function onSpiralDown(e){
   if(unlocked || !spiralEl) return;
 
+  isDragging = true;
   spiralEl.setPointerCapture?.(e.pointerId);
 
   lastAngle = angleFromCenter(e, spiralEl);
@@ -96,7 +119,7 @@ function onSpiralDown(e){
 }
 
 function onSpiralMove(e){
-  if(unlocked || !spiralEl) return;
+  if(unlocked || !spiralEl || !isDragging) return;
 
   const now = performance.now();
   const ang = angleFromCenter(e, spiralEl);
@@ -107,23 +130,21 @@ function onSpiralMove(e){
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
 
-  const dt = Math.max(16, now - lastTime); // clamp
+  const dt = Math.max(10, now - lastTime); // ms clamp
 
-  rotation += delta;
+  // Convert to a speed "push"
+  const instantDegPerSec = (delta / dt) * 1000;
 
-  // Apply rotation
-  spiralEl.style.setProperty("--r", `${rotation}deg`);
-  spiralEl.style.transform = `rotate(${rotation}deg)`;
+  // Add momentum: small swipes add small speed, repeated swipes build up
+  // Tweak numbers here if you want harder/easier.
+  const PUSH_GAIN = 0.70;          // how much each swipe adds
+  const MAX_SPEED = 4200;          // deg/sec cap
 
-  // Velocity score (bigger = faster)
-  const instant = Math.abs(delta) / dt;   // deg per ms
-  velocity = velocity * 0.86 + instant * 0.14;
+  spinSpeed += instantDegPerSec * PUSH_GAIN;
+  spinSpeed = clamp(spinSpeed, -MAX_SPEED, MAX_SPEED);
 
-  // Threshold: tune if you want easier/harder
-  // On phones, ~0.18–0.28 feels good. This is ~0.22.
-  if(velocity > 0.22){
-    unlockSpiral();
-  }
+  // Tiny direct response so it feels connected to finger
+  rotation += delta * 0.25;
 
   lastAngle = ang;
   lastTime = now;
@@ -131,11 +152,64 @@ function onSpiralMove(e){
 
 function onSpiralUp(e){
   if(!spiralEl) return;
+
+  isDragging = false;
+
   try { spiralEl.releasePointerCapture?.(e.pointerId); } catch {}
 
   spiralEl.removeEventListener("pointermove", onSpiralMove);
   spiralEl.removeEventListener("pointerup", onSpiralUp);
   spiralEl.removeEventListener("pointercancel", onSpiralUp);
+}
+
+function tick(now){
+  if(unlocked || !spiralEl){
+    cancelAnimationFrame(rafId);
+    return;
+  }
+
+  const dt = Math.min(34, now - rafLast); // ms
+  rafLast = now;
+
+  // Momentum/friction: slows down if they stop swiping
+  // Higher friction => slows faster => harder.
+  const FRICTION = 0.965; // per frame-ish
+  const frictionPow = Math.pow(FRICTION, dt / 16);
+  spinSpeed *= frictionPow;
+
+  // Update rotation from momentum
+  rotation += (spinSpeed * dt) / 1000;
+
+  spiralEl.style.setProperty("--r", `${rotation}deg`);
+  spiralEl.style.transform = `rotate(${rotation}deg)`;
+
+  // Unlock progress: only builds meaningfully at higher speeds
+  const absSpeed = Math.abs(spinSpeed);
+
+  // Need sustained speed; slow spins barely add anything.
+  const TARGET_SPEED = 2200; // deg/sec where progress builds at full rate
+  const speedFactor = clamp(absSpeed / TARGET_SPEED, 0, 1);
+
+  // Progress build & decay (so one swipe won't win)
+  const BUILD_RATE = 0.00045;  // per ms at full speed (≈0.45/sec)
+  const DECAY_RATE = 0.00010;  // per ms when not keeping speed
+
+  progress += speedFactor * dt * BUILD_RATE;
+
+  // If they slow down too much, progress bleeds out
+  if(speedFactor < 0.45){
+    progress -= (0.45 - speedFactor) * dt * DECAY_RATE * 2.2;
+  }
+
+  progress = clamp(progress, 0, 1);
+
+  // Unlock when meter is filled
+  if(progress >= 1){
+    unlockSpiral();
+    return;
+  }
+
+  rafId = requestAnimationFrame(tick);
 }
 
 function angleFromCenter(e, el){
@@ -147,27 +221,36 @@ function angleFromCenter(e, el){
   return Math.atan2(dy, dx) * 180 / Math.PI;
 }
 
+function clamp(n, a, b){
+  return Math.max(a, Math.min(b, n));
+}
+
 function unlockSpiral(){
   if(unlocked || !spiralEl) return;
   unlocked = true;
 
-  // Stop listening
+  // stop input
+  spiralEl.removeEventListener("pointerdown", onSpiralDown);
   spiralEl.removeEventListener("pointermove", onSpiralMove);
   spiralEl.removeEventListener("pointerup", onSpiralUp);
   spiralEl.removeEventListener("pointercancel", onSpiralUp);
 
-  // Whole page spins while spiral flies forward
+  // Screen spin + spiral fills screen
   document.body.classList.add("page-spin");
-
-  // Fly/zoom animation
   spiralEl.classList.add("spinning-fast");
 
-  // After animation ends -> reveal invite (scroll mode)
-  // Match CSS duration: 1.35s
+  // After the spin animation ends, flood bright yellow for ~2s, then reveal
+  // CSS spin/fly is 1.35s
+  setTimeout(() => {
+    yellowFlashEl?.classList.add("show");
+  }, 1100); // starts near the end of the spin so it feels like it "bursts" out
+
+  // Total delay: spin (1350ms) + yellow hold (2000ms)
   setTimeout(() => {
     document.body.classList.remove("page-spin");
+    yellowFlashEl?.classList.remove("show");
     finishGame();
-  }, 1350);
+  }, 1350 + 2000);
 }
 
 /* ---------------- FINISH: enable scroll from Show Up to end ---------------- */
