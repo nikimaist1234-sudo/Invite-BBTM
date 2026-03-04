@@ -9,7 +9,6 @@ let musicStarted = false;
 function preventScroll(e){
   if(!document.body.classList.contains("locked")) return;
 
-  // Allow touches inside spiral game area
   const allowed = e.target?.closest?.(".spiral-container");
   if(allowed) return;
 
@@ -38,7 +37,6 @@ function startMusic(){
   music.play().catch(() => {});
   musicStarted = true;
 
-  // gentle fade in
   const fade = setInterval(() => {
     if(music.volume < 0.6){
       music.volume = Math.min(0.6, music.volume + 0.05);
@@ -49,13 +47,8 @@ function startMusic(){
 }
 
 /* =========================================================
-   PAGE 1 GAME (UPDATED): MOMENTUM + BUILD-UP
-   - First swipe starts slow
-   - Keep swiping builds speed (momentum)
-   - Must maintain fast spin long enough to fill "unlock progress"
-   - On unlock: page spins + spiral fills screen + bright yellow flood (2s) -> reveal invite
+   PAGE 1 GAME (Momentum + Build-up)
    ========================================================= */
-
 let spiralEl = null;
 let yellowFlashEl = null;
 
@@ -78,7 +71,6 @@ function startSpiralGame(){
 
   if(!spiralEl) return;
 
-  // reset
   unlocked = false;
   rotation = 0;
   spinSpeed = 0;
@@ -95,10 +87,8 @@ function startSpiralGame(){
   document.body.classList.remove("page-spin");
   yellowFlashEl?.classList.remove("show");
 
-  // listeners
   spiralEl.addEventListener("pointerdown", onSpiralDown);
 
-  // start animation loop
   cancelAnimationFrame(rafId);
   rafLast = performance.now();
   rafId = requestAnimationFrame(tick);
@@ -126,24 +116,19 @@ function onSpiralMove(e){
 
   let delta = ang - lastAngle;
 
-  // fix jump across -180/180 wrap
   if(delta > 180) delta -= 360;
   if(delta < -180) delta += 360;
 
-  const dt = Math.max(10, now - lastTime); // ms clamp
+  const dt = Math.max(10, now - lastTime);
 
-  // Convert to a speed "push"
   const instantDegPerSec = (delta / dt) * 1000;
 
-  // Add momentum: small swipes add small speed, repeated swipes build up
-  // Tweak numbers here if you want harder/easier.
-  const PUSH_GAIN = 0.70;          // how much each swipe adds
-  const MAX_SPEED = 4200;          // deg/sec cap
+  const PUSH_GAIN = 0.70;
+  const MAX_SPEED = 4200;
 
   spinSpeed += instantDegPerSec * PUSH_GAIN;
   spinSpeed = clamp(spinSpeed, -MAX_SPEED, MAX_SPEED);
 
-  // Tiny direct response so it feels connected to finger
   rotation += delta * 0.25;
 
   lastAngle = ang;
@@ -168,42 +153,34 @@ function tick(now){
     return;
   }
 
-  const dt = Math.min(34, now - rafLast); // ms
+  const dt = Math.min(34, now - rafLast);
   rafLast = now;
 
-  // Momentum/friction: slows down if they stop swiping
-  // Higher friction => slows faster => harder.
-  const FRICTION = 0.965; // per frame-ish
+  const FRICTION = 0.965;
   const frictionPow = Math.pow(FRICTION, dt / 16);
   spinSpeed *= frictionPow;
 
-  // Update rotation from momentum
   rotation += (spinSpeed * dt) / 1000;
 
   spiralEl.style.setProperty("--r", `${rotation}deg`);
   spiralEl.style.transform = `rotate(${rotation}deg)`;
 
-  // Unlock progress: only builds meaningfully at higher speeds
   const absSpeed = Math.abs(spinSpeed);
 
-  // Need sustained speed; slow spins barely add anything.
-  const TARGET_SPEED = 2200; // deg/sec where progress builds at full rate
+  const TARGET_SPEED = 2200;
   const speedFactor = clamp(absSpeed / TARGET_SPEED, 0, 1);
 
-  // Progress build & decay (so one swipe won't win)
-  const BUILD_RATE = 0.00045;  // per ms at full speed (≈0.45/sec)
-  const DECAY_RATE = 0.00010;  // per ms when not keeping speed
+  const BUILD_RATE = 0.00045;
+  const DECAY_RATE = 0.00010;
 
   progress += speedFactor * dt * BUILD_RATE;
 
-  // If they slow down too much, progress bleeds out
   if(speedFactor < 0.45){
     progress -= (0.45 - speedFactor) * dt * DECAY_RATE * 2.2;
   }
 
   progress = clamp(progress, 0, 1);
 
-  // Unlock when meter is filled
   if(progress >= 1){
     unlockSpiral();
     return;
@@ -229,23 +206,18 @@ function unlockSpiral(){
   if(unlocked || !spiralEl) return;
   unlocked = true;
 
-  // stop input
   spiralEl.removeEventListener("pointerdown", onSpiralDown);
   spiralEl.removeEventListener("pointermove", onSpiralMove);
   spiralEl.removeEventListener("pointerup", onSpiralUp);
   spiralEl.removeEventListener("pointercancel", onSpiralUp);
 
-  // Screen spin + spiral fills screen
   document.body.classList.add("page-spin");
   spiralEl.classList.add("spinning-fast");
 
-  // After the spin animation ends, flood bright yellow for ~2s, then reveal
-  // CSS spin/fly is 1.35s
   setTimeout(() => {
     yellowFlashEl?.classList.add("show");
-  }, 1100); // starts near the end of the spin so it feels like it "bursts" out
+  }, 1100);
 
-  // Total delay: spin (1350ms) + yellow hold (2000ms)
   setTimeout(() => {
     document.body.classList.remove("page-spin");
     yellowFlashEl?.classList.remove("show");
@@ -263,3 +235,195 @@ function finishGame(){
     page2?.scrollIntoView({ behavior: "smooth" });
   }, 350);
 }
+
+/* =========================================================
+   QUIZ (ported from Trilogy + updated to BBTM songs)
+   - jpg/mp3 filenames use exact keys:
+     often, losers, earned-it, in-the-night, as-you-are
+   ========================================================= */
+const quizScreen = document.getElementById("pageQuiz");
+const openQuizBtn = document.getElementById("openQuizBtn");
+const quizBackBtn = document.getElementById("quizBackBtn");
+
+const quizForm = document.getElementById("quizForm");
+const guestNameInput = document.getElementById("guestName");
+const quizFinishBtn = document.getElementById("quizFinishBtn");
+
+const quizResult = document.getElementById("quizResult");
+const quizResultInner = document.getElementById("quizResultInner");
+const resultCover = document.getElementById("resultCover");
+const resultBlurb = document.getElementById("resultBlurb");
+const quizOverlay = document.getElementById("quizOverlay");
+
+const quizRetryBtn = document.getElementById("quizRetryBtn");
+const quizCloseBtn = document.getElementById("quizCloseBtn");
+
+const resultAudio = document.getElementById("resultAudio");
+
+const SONG_KEYS = ["often", "losers", "earned-it", "in-the-night", "as-you-are"];
+
+const SONG_PRETTY = {
+  "often": "Often",
+  "losers": "Losers",
+  "earned-it": "Earned It",
+  "in-the-night": "In The Night",
+  "as-you-are": "As You Are",
+};
+
+const SONG_BLURB = {
+  "often": "You’re the main character. Smooth, confident, and a little dangerous.",
+  "losers": "You’re real, unfiltered, and you don’t pretend for anyone.",
+  "earned-it": "Soft heart, high standards. You move like luxury.",
+  "in-the-night": "Mysterious vibe. People want the story but you keep it lowkey.",
+  "as-you-are": "Warm energy. You make people feel seen without even trying.",
+};
+
+let _inviteWasPlaying = false;
+let _inviteTime = 0;
+let _scrollYBeforeQuiz = 0;
+
+function stopResultAudio() {
+  if (!resultAudio) return;
+  resultAudio.pause();
+  resultAudio.currentTime = 0;
+  resultAudio.removeAttribute("src");
+}
+
+function enterQuizAudioMode() {
+  stopResultAudio();
+
+  if (!music) return;
+  _inviteWasPlaying = !music.paused;
+  _inviteTime = music.currentTime || 0;
+  music.pause();
+}
+
+function exitQuizAudioMode() {
+  stopResultAudio();
+
+  if (!music) return;
+  if (_inviteWasPlaying) {
+    try {
+      music.currentTime = _inviteTime || 0;
+    } catch (e) {}
+    music.play().catch(() => {});
+  }
+}
+
+function resetQuizUI() {
+  quizForm?.reset();
+
+  if (quizResult) quizResult.style.display = "none";
+  if (quizResultInner) {
+    quizResultInner.classList.remove("show");
+    quizResultInner.innerHTML = "";
+  }
+  if (resultCover) {
+    resultCover.classList.remove("show");
+    resultCover.removeAttribute("src");
+  }
+  if (resultBlurb) resultBlurb.textContent = "";
+  quizOverlay?.classList.remove("on");
+}
+
+function openQuiz() {
+  _scrollYBeforeQuiz = window.scrollY || 0;
+  enterQuizAudioMode();
+  resetQuizUI();
+
+  document.body.classList.add("quiz-open");
+  quizScreen?.setAttribute("aria-hidden", "false");
+
+  setTimeout(() => {
+    if (quizScreen) quizScreen.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, 0);
+}
+
+function closeQuiz() {
+  document.body.classList.remove("quiz-open");
+  quizScreen?.setAttribute("aria-hidden", "true");
+  stopResultAudio();
+
+  setTimeout(() => {
+    window.scrollTo({ top: _scrollYBeforeQuiz, behavior: "auto" });
+  }, 0);
+
+  exitQuizAudioMode();
+}
+
+function computeQuizResult() {
+  if (!quizForm) return { error: "Quiz not found." };
+
+  const guestName = (guestNameInput?.value || "").trim();
+  if (!guestName) return { error: "Enter your name first." };
+
+  const scores = Object.fromEntries(SONG_KEYS.map((k) => [k, 0]));
+  const data = new FormData(quizForm);
+
+  for (const [key, value] of data.entries()) {
+    if (key === "guestName") continue;
+    if (scores[value] !== undefined) scores[value] += 1;
+  }
+
+  for (let i = 1; i <= 6; i++) {
+    if (!data.get("q" + i)) return { error: "Answer all 6 questions first." };
+  }
+
+  const max = Math.max(...Object.values(scores));
+  const top = Object.keys(scores).filter((k) => scores[k] === max);
+  const chosen = top[Math.floor(Math.random() * top.length)];
+
+  return { chosen, guestName };
+}
+
+function showQuizResult({ chosen, guestName }) {
+  const pretty = SONG_PRETTY[chosen] || chosen;
+
+  if (quizResult) quizResult.style.display = "block";
+  quizOverlay?.classList.add("on");
+
+  if (quizResultInner) {
+    quizResultInner.innerHTML = `
+      <h2>${guestName}, your song is <span class="quiz-album">${pretty}</span></h2>
+      <p>Don’t argue. The vibe picked you.</p>
+    `;
+    requestAnimationFrame(() => quizResultInner.classList.add("show"));
+  }
+
+  if (resultCover) {
+    resultCover.src = `${chosen}.jpg`;
+    resultCover.classList.add("show");
+  }
+
+  if (resultBlurb) {
+    resultBlurb.textContent = SONG_BLURB[chosen] || "";
+  }
+
+  // play result mp3 (exact filename spelling)
+  if (resultAudio) {
+    try {
+      resultAudio.src = `${chosen}.mp3`;
+      resultAudio.currentTime = 0;
+      resultAudio.play().catch(() => {});
+    } catch (e) {}
+  }
+}
+
+openQuizBtn?.addEventListener("click", openQuiz);
+quizBackBtn?.addEventListener("click", closeQuiz);
+quizCloseBtn?.addEventListener("click", closeQuiz);
+
+quizRetryBtn?.addEventListener("click", () => {
+  stopResultAudio();
+  resetQuizUI();
+});
+
+quizFinishBtn?.addEventListener("click", () => {
+  const res = computeQuizResult();
+  if (res.error) {
+    alert(res.error);
+    return;
+  }
+  showQuizResult(res);
+});
