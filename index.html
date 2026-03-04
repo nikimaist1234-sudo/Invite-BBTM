@@ -25,16 +25,19 @@
         <h2>X'O Nights: Nikita Turns 21</h2>
 
         <div class="game-area">
-            <p class="game-hint">Spin the spiral fast enough to unlock.</p>
-            <p class="micro-hint">Drag in a circular motion.</p>
+            <p class="game-hint">Spin the sprial fast enough to unlock the invite.</p>
+            <p class="micro-hint">Keep swiping in circles the faster the better.</p>
 
             <div class="spiral-container">
                 <div class="spiral" id="neonSpiral"></div>
             </div>
+
+            <!-- (optional) You can add a progress label later if you want -->
+            <!-- <div class="spiral-status" id="spinStatus">Spin power: 0%</div> -->
         </div>
     </div>
 </section>
-    
+
 <!-- PAGE 2 -->
 <section id="page2" class="page light-page">
     <div class="two-column">
@@ -104,7 +107,10 @@
     </footer>
 </section>
 
-<!-- Blood overlay (used on win) -->
+<!-- Bright yellow flood overlay (used on win) -->
+<div id="yellowFlash" aria-hidden="true"></div>
+
+<!-- Blood overlay (kept, unused here) -->
 <div id="bloodOverlay" aria-hidden="true"></div>
 
 <!-- Audio -->
@@ -113,4 +119,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
