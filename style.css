@@ -253,7 +253,10 @@ body.page-spin #page1{
     border-radius: 5px;
     display: inline-block;
     margin: 10px 0 14px;
+    border: 1px solid rgba(0,0,0,0.35); /* subtle black outline like Trilogy */
 }
+
+.highlight-box strong{ font-weight: 800; }
 
 .dress-list {
     padding-left: 20px;
