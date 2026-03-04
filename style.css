@@ -91,9 +91,7 @@ html, body {
 }
 
 /* =========================================================
-   PAGE 1 GAME: NEON SPIRAL SPIN
-   - Drag in circles to spin
-   - Spin fast enough -> fly/zoom -> whole page spins -> unlock invite
+   PAGE 1 GAME: NEON SPIRAL SPIN (Momentum version)
    ========================================================= */
 
 .spiral-container{
@@ -122,23 +120,20 @@ html, body {
     cursor: grab;
     user-select: none;
     -webkit-user-select: none;
-    touch-action: none; /* important: allow smooth spinning on mobile */
+    touch-action: none;
 
-    /* Spiral look */
     background:
         repeating-conic-gradient(
             rgba(255, 216, 74, 1) 0deg 12deg,
             rgba(255, 216, 74, 0.08) 12deg 24deg
         );
 
-    /* Neon glow */
     box-shadow:
         0 0 18px rgba(255,216,74,0.75),
         0 0 50px rgba(255,216,74,0.45),
         0 0 95px rgba(255,216,74,0.25),
         inset 0 0 26px rgba(255,216,74,0.6);
 
-    /* subtle flicker */
     animation: neonFlicker 2.2s infinite ease-in-out;
     transition: transform 0.06s linear;
 }
@@ -183,6 +178,27 @@ body.page-spin #page1{
 @keyframes pageSpin{
     0%   { transform: rotate(0deg) scale(1); }
     100% { transform: rotate(360deg) scale(1.02); }
+}
+
+/* ---------------- BRIGHT YELLOW FLOOD (NEW) ---------------- */
+#yellowFlash{
+    position: fixed;
+    inset: 0;
+    background: #ffea00; /* bright yellow */
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+#yellowFlash.show{
+    animation: yellowFlood 2s ease-in-out forwards;
+}
+
+@keyframes yellowFlood{
+    0%   { opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 /* Optional “unlock pulse” text style (if you use status pill later) */
