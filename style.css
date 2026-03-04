@@ -71,6 +71,10 @@ html, body {
     margin-bottom: 10px;
 }
 
+.invite-title{
+    font-size: 3rem;
+}
+
 /* ---------------- GAME AREA ---------------- */
 .game-area{
     margin-top: 26px;
