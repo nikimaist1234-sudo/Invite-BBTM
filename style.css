@@ -43,7 +43,7 @@ html, body {
 
 /* ---------------- PAGE 0 (Volume) ---------------- */
 .volume-page {
-    background: url("background.jpg") no-repeat center center/cover; /* CHANGED */
+    background: url("background.jpg") no-repeat center center/cover;
     color: white;
 }
 
@@ -71,8 +71,9 @@ html, body {
     margin-bottom: 10px;
 }
 
+/* Change 1: Slightly smaller subtitle */
 .invite-title{
-    font-size: 2rem;
+    font-size: 1.6rem;
 }
 
 /* ---------------- GAME AREA ---------------- */
@@ -152,7 +153,7 @@ html, body {
     72%      { filter: brightness(1.12); }
 }
 
-/* Spiral “flies” forward and fills screen */
+/* Spiral "flies" forward and fills screen */
 .spiral.spinning-fast{
     animation: spiralFly 1.35s ease-in forwards;
 }
@@ -247,13 +248,18 @@ body.page-spin #page1{
     text-align: center;
 }
 
+/* Change 2: Slightly bigger Dress Code title */
+.dress-title {
+    font-size: 1.8rem;
+}
+
 .highlight-box {
     background-color: #d6d6d6;
     padding: 10px 15px;
     border-radius: 5px;
     display: inline-block;
     margin: 10px 0 14px;
-    border: 1px solid rgba(0,0,0,0.35); /* subtle black outline like Trilogy */
+    border: 1px solid rgba(0,0,0,0.35);
 }
 
 .highlight-box strong{ font-weight: 800; }
@@ -268,7 +274,8 @@ body.page-spin #page1{
 
 /* ---------------- CONTACT PAGE ---------------- */
 .big-contact {
-    font-size: 3rem;
+    font-size: 2.2rem;
+    margin-bottom: 8px;
 }
 
 /* ---------------- BUTTONS ---------------- */
@@ -299,10 +306,10 @@ button.primary:hover{
     width: 100%;
     background: black;
     color: white;
-    padding: 15px 0;
+    padding: 16px 0;
     text-align: center;
     font-weight: bold;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-family: Rockwell, "Times New Roman", serif;
     margin-top: 30px;
 }
@@ -344,7 +351,7 @@ body.scroll-mode #page4{
 }
 
 /* =========================================================
-   TRILOGY-STYLE PAGE 4 STRUCTURE + QUIZ (ported)
+   TRILOGY-STYLE PAGE 4 STRUCTURE + QUIZ
    ========================================================= */
 #page4{
     display: flex;
@@ -428,7 +435,7 @@ body.quiz-open .quiz-screen{
     width: min(780px, 92vw);
     margin: 0 auto;
     position: relative;
-    padding: 18px 0 40px;
+    padding: 18px 0 100px;
 }
 
 .quiz-back-btn{
@@ -646,6 +653,10 @@ body.quiz-open .quiz-screen{
 
     .big-title {
         font-size: 2.25rem;
+    }
+
+    .invite-title{
+        font-size: 1.4rem;
     }
 
     .game-hint{
