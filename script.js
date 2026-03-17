@@ -237,9 +237,7 @@ function finishGame(){
 }
 
 /* =========================================================
-   QUIZ (ported from Trilogy + updated to BBTM songs)
-   - jpg/mp3 filenames use exact keys:
-     often, losers, earned-it, in-the-night, as-you-are
+   QUIZ (Beauty Behind the Madness)
    ========================================================= */
 const quizScreen = document.getElementById("pageQuiz");
 const openQuizBtn = document.getElementById("openQuizBtn");
@@ -271,8 +269,8 @@ const SONG_PRETTY = {
 };
 
 const SONG_BLURB = {
-  "often": "You’re the main character. Smooth, confident, and a little dangerous.",
-  "losers": "You’re real, unfiltered, and you don’t pretend for anyone.",
+  "often": "You're the main character. Smooth, confident, and a little dangerous.",
+  "losers": "You're real, unfiltered, and you don't pretend for anyone.",
   "earned-it": "Soft heart, high standards. You move like luxury.",
   "in-the-night": "Mysterious vibe. People want the story but you keep it lowkey.",
   "as-you-are": "Warm energy. You make people feel seen without even trying.",
@@ -399,27 +397,7 @@ function showQuizResult({ chosen, guestName }) {
     resultBlurb.textContent = SONG_BLURB[chosen] || "";
   }
 
-  // auto scroll so the whole reveal section is visible (heading + image + buttons)
-if (quizResult) {
-  setTimeout(() => {
-    // 1) Center the whole reveal card in the viewport
-    quizResult.scrollIntoView({ behavior: "smooth", block: "center" });
-
-    // 2) After the smooth scroll starts, do a tiny adjustment so the bottom buttons
-    // are more likely to be visible on smaller screens
-    setTimeout(() => {
-      const rect = quizResult.getBoundingClientRect();
-      const pad = 16; // small safety padding
-      const overflowBottom = rect.bottom - (window.innerHeight - pad);
-
-      if (overflowBottom > 0) {
-        window.scrollBy({ top: overflowBottom, behavior: "smooth" });
-      }
-    }, 350);
-  }, 80);
-}
-
-  // play result mp3 (exact filename spelling)
+  // Play result song
   if (resultAudio) {
     try {
       resultAudio.src = `${chosen}.mp3`;
@@ -427,6 +405,17 @@ if (quizResult) {
       resultAudio.play().catch(() => {});
     } catch (e) {}
   }
+
+  // Auto-scroll so the WHOLE reveal is visible
+  setTimeout(() => {
+    // Scroll the result section into view
+    quizResult.scrollIntoView({ behavior: "smooth", block: "start" });
+    
+    // Additional scroll to ensure buttons are visible
+    setTimeout(() => {
+      window.scrollBy({ top: 200, left: 0, behavior: "smooth" });
+    }, 400);
+  }, 100);
 }
 
 openQuizBtn?.addEventListener("click", openQuiz);
@@ -436,6 +425,7 @@ quizCloseBtn?.addEventListener("click", closeQuiz);
 quizRetryBtn?.addEventListener("click", () => {
   stopResultAudio();
   resetQuizUI();
+  if (quizScreen) quizScreen.scrollTop = 0;
 });
 
 quizFinishBtn?.addEventListener("click", () => {
