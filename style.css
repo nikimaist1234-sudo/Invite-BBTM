@@ -11,7 +11,7 @@ html, body {
     background: black;
 }
 
-/* ---------------- PAGE SYSTEM (Initial: Smooth Transitions) ---------------- */
+/* ---------------- PAGE SYSTEM ---------------- */
 .page {
     position: absolute;
     top: 0;
@@ -19,18 +19,14 @@ html, body {
     width: 100%;
     min-height: 100vh;
     padding: 40px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-
-    transform: scale(1.02);
-    transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+    transform: scale(0.98);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .page.active {
@@ -38,283 +34,16 @@ html, body {
     visibility: visible;
     pointer-events: auto;
     transform: scale(1);
-    z-index: 2;
 }
 
-/* ---------------- PAGE 0 (Volume) ---------------- */
-.volume-page {
-    background: url("background.jpg") no-repeat center center/cover;
-    color: white;
+/* Page 1 fade before scrolling reveal */
+#page1.fade-out{
+    opacity: 0 !important;
+    transform: scale(0.995);
+    transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-.volume-overlay h2{
-    margin-top: 10px;
-    opacity: 0.95;
-}
-
-/* ---------------- PAGE 1 ---------------- */
-#page1 {
-    background: url("weeknd-bg.jpg") no-repeat center center/cover;
-    color: white;
-}
-
-.overlay {
-    background: rgba(0,0,0,0.6);
-    padding: 40px;
-    border-radius: 15px;
-    text-align: center;
-    width: min(920px, 94vw);
-}
-
-.big-title {
-    font-size: 5rem;
-    margin-bottom: 10px;
-}
-
-/* Change 1: Slightly smaller subtitle */
-.invite-title{
-    font-size: 1.6rem;
-}
-
-/* ---------------- GAME AREA ---------------- */
-.game-area{
-    margin-top: 26px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    align-items: center;
-}
-
-.game-hint{
-    font-size: 1.55rem;
-    opacity: 0.96;
-}
-
-.micro-hint{
-    font-size: 0.95rem;
-    opacity: 0.85;
-}
-
-/* =========================================================
-   PAGE 1 GAME: NEON SPIRAL SPIN (Momentum version)
-   ========================================================= */
-.spiral-container{
-    margin-top: 18px;
-    width: min(820px, 92vw);
-    height: 360px;
-    display: grid;
-    place-items: center;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-    border: 1px solid rgba(255,255,255,0.12);
-    background:
-        radial-gradient(circle at 50% 45%, rgba(255,220,70,0.08), rgba(0,0,0,0.82) 62%),
-        linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.70));
-    padding: 16px;
-    position: relative;
-}
-
-.spiral{
-    width: 240px;
-    height: 240px;
-    border-radius: 50%;
-    position: relative;
-
-    cursor: grab;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
-
-    background:
-        repeating-conic-gradient(
-            rgba(255, 216, 74, 1) 0deg 12deg,
-            rgba(255, 216, 74, 0.08) 12deg 24deg
-        );
-
-    box-shadow:
-        0 0 18px rgba(255,216,74,0.75),
-        0 0 50px rgba(255,216,74,0.45),
-        0 0 95px rgba(255,216,74,0.25),
-        inset 0 0 26px rgba(255,216,74,0.6);
-
-    animation: neonFlicker 2.2s infinite ease-in-out;
-    transition: transform 0.06s linear;
-}
-
-.spiral:active{
-    cursor: grabbing;
-}
-
-@keyframes neonFlicker{
-    0%, 100% { filter: brightness(1); }
-    45%      { filter: brightness(1.08); }
-    55%      { filter: brightness(0.95); }
-    72%      { filter: brightness(1.12); }
-}
-
-/* Spiral "flies" forward and fills screen */
-.spiral.spinning-fast{
-    animation: spiralFly 1.35s ease-in forwards;
-}
-
-@keyframes spiralFly{
-    0%{
-        transform: rotate(var(--r, 0deg)) scale(1);
-        opacity: 1;
-    }
-    45%{
-        transform: rotate(calc(var(--r, 0deg) + 720deg)) scale(4.2);
-        opacity: 1;
-    }
-    100%{
-        transform: rotate(calc(var(--r, 0deg) + 1440deg)) scale(14);
-        opacity: 0;
-    }
-}
-
-/* Whole page spins during unlock */
-body.page-spin #page1{
-    transform-origin: center center;
-    animation: pageSpin 1.35s ease-in forwards;
-}
-
-@keyframes pageSpin{
-    0%   { transform: rotate(0deg) scale(1); }
-    100% { transform: rotate(360deg) scale(1.02); }
-}
-
-/* ---------------- BRIGHT YELLOW FLOOD ---------------- */
-#yellowFlash{
-    position: fixed;
-    inset: 0;
-    background: #ffea00;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9999;
-}
-
-#yellowFlash.show{
-    animation: yellowFlood 2s ease-in-out forwards;
-}
-
-@keyframes yellowFlood{
-    0%   { opacity: 0; }
-    15%  { opacity: 1; }
-    85%  { opacity: 1; }
-    100% { opacity: 0; }
-}
-
-/* ---------------- LIGHT PAGES ---------------- */
-.light-page {
-    background-color: #e5e5e5;
-    color: black;
-}
-
-/* ---------------- TWO COLUMN LAYOUT ---------------- */
-.two-column {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    gap: 30px;
-}
-
-.two-column .left,
-.two-column .right {
-    width: 45%;
-}
-
-.text-left {
-    text-align: left;
-}
-
-.two-column img {
-    width: 100%;
-    border-radius: 8px;
-}
-
-.big-line {
-    font-size: 1.3rem;
-    margin-top: 12px;
-}
-
-/* ---------------- PAGE 3 SPECIFIC ---------------- */
-.tagline{
-    margin-top: 10px;
-    font-weight: 700;
-    opacity: 0.95;
-    letter-spacing: 0.2px;
-    text-align: center;
-}
-
-/* Change 2: Slightly bigger Dress Code title */
-.dress-title {
-    font-size: 1.8rem;
-}
-
-.highlight-box {
-    background-color: #d6d6d6;
-    padding: 10px 15px;
-    border-radius: 5px;
-    display: inline-block;
-    margin: 10px 0 14px;
-    border: 1px solid rgba(0,0,0,0.35);
-}
-
-.highlight-box strong{ font-weight: 800; }
-
-.dress-list {
-    padding-left: 20px;
-}
-
-.dress-list li {
-    margin-bottom: 8px;
-}
-
-/* ---------------- CONTACT PAGE ---------------- */
-.big-contact {
-    font-size: 2.2rem;
-    margin-bottom: 8px;
-}
-
-/* ---------------- BUTTONS ---------------- */
-button {
-    margin-top: 18px;
-    padding: 10px 20px;
-    border: none;
-    background: black;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s ease;
-    border-radius: 10px;
-}
-
-button:hover { background: #333; }
-
-button.primary{
-    background: #ffffff;
-    color: #111;
-}
-button.primary:hover{
-    background: #e9e9e9;
-}
-
-/* ---------------- FOOTER ---------------- */
-.dark-footer {
-    width: 100%;
-    background: black;
-    color: white;
-    padding: 16px 0;
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.8rem;
-    font-family: Rockwell, "Times New Roman", serif;
-    margin-top: 30px;
-}
-
-/* ---------------- SCROLL MODE (Page 2 -> end) ---------------- */
+/* ---------------- LOCK + SCROLL MODES ---------------- */
 body.locked{
     height: 100vh;
     overflow: hidden;
@@ -350,9 +79,231 @@ body.scroll-mode #page4{
     padding-bottom: 0;
 }
 
-/* =========================================================
-   TRILOGY-STYLE PAGE 4 STRUCTURE + QUIZ
-   ========================================================= */
+/* ---------------- PAGE 0: VOLUME ---------------- */
+.volume-page{
+    background: url("background.jpg") no-repeat center center/cover;
+}
+
+.volume-overlay{
+    text-align: center;
+    color: white;
+}
+
+.primary{
+    margin-top: 20px;
+    padding: 14px 22px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    background: white;
+    color: black;
+    font-weight: bold;
+    font-size: 16px;
+    touch-action: manipulation;
+}
+
+/* ---------------- PAGE 1: GAME ---------------- */
+#page1{
+    background: url("weeknd-bg.jpg") no-repeat center center/cover;
+}
+
+.overlay{
+    text-align: center;
+    color: white;
+}
+
+.big-title{
+    font-size: 36px;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+}
+
+/* Game area styles */
+.game-area{
+    margin-top: 20px;
+}
+
+.game-hint{
+    font-size: 18px;
+    margin-bottom: 14px;
+}
+
+.micro-hint{
+    font-size: 14px;
+    opacity: 0.85;
+    margin-bottom: 14px;
+}
+
+/* Spiral game styles */
+.spiral-container{
+    position: relative;
+    width: min(560px, 92vw);
+    height: 420px;
+    margin: 0 auto;
+    border-radius: 18px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.15);
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+}
+
+.spiral{
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    position: relative;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    background:
+        repeating-conic-gradient(
+            rgba(255, 216, 74, 1) 0deg 12deg,
+            rgba(255, 216, 74, 0.08) 12deg 24deg
+        );
+    box-shadow:
+        0 0 18px rgba(255,216,74,0.75),
+        0 0 50px rgba(255,216,74,0.45),
+        0 0 95px rgba(255,216,74,0.25),
+        inset 0 0 26px rgba(255,216,74,0.6);
+    animation: neonFlicker 2.2s infinite ease-in-out;
+    transition: transform 0.06s linear;
+}
+
+.spiral:active{
+    cursor: grabbing;
+}
+
+@keyframes neonFlicker{
+    0%, 100% { filter: brightness(1); }
+    45%      { filter: brightness(1.08); }
+    55%      { filter: brightness(0.95); }
+    72%      { filter: brightness(1.12); }
+}
+
+/* Spiral flies forward on win */
+.spiral.spinning-fast{
+    animation: spiralFly 1.35s ease-in forwards;
+}
+
+@keyframes spiralFly{
+    0%{
+        transform: rotate(var(--r, 0deg)) scale(1);
+        opacity: 1;
+    }
+    45%{
+        transform: rotate(calc(var(--r, 0deg) + 720deg)) scale(4.2);
+        opacity: 1;
+    }
+    100%{
+        transform: rotate(calc(var(--r, 0deg) + 1440deg)) scale(14);
+        opacity: 0;
+    }
+}
+
+/* ---------------- XO RAIN LAYER (Yellow Theme) ---------------- */
+#xoRainLayer{
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+}
+
+.xo-piece{
+    position: absolute;
+    top: -40px;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 1px;
+    animation-name: xoFall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    text-shadow: 0 0 10px rgba(255,255,255,0.12);
+}
+
+@keyframes xoFall{
+    to{
+        transform: translate(var(--drift), 110vh) rotate(var(--rot));
+        opacity: 0.12;
+    }
+}
+
+/* ---------------- LIGHT PAGES ---------------- */
+.light-page{
+    background: #e5e5e5;
+    color: black;
+}
+
+.two-column{
+    display: flex;
+    gap: 20px;
+    width: min(960px, 92vw);
+    align-items: center;
+    justify-content: center;
+}
+
+.left, .right{
+    flex: 1;
+}
+
+.left img{
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+}
+
+.text-left{
+    text-align: left;
+}
+
+.big-line{
+    font-size: 20px;
+    margin-top: 12px;
+}
+
+.tagline{
+    text-align: center;
+    margin-top: 10px;
+    opacity: 0.9;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.3px;
+}
+
+.highlight-box{
+    background: rgba(0,0,0,0.06);
+    padding: 14px;
+    border-radius: 14px;
+    margin: 14px 0;
+    border: 1px solid rgba(0,0,0,0.35);
+}
+
+.dress-list{
+    margin-left: 18px;
+    line-height: 1.8;
+}
+
+/* Page 3 Note and Keep Scrolling styles */
+.note-text{
+    margin-top: 10px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.keep-scrolling{
+    font-size: 18px;
+    margin-top: 8px;
+}
+
+/* ---------------- CONTACT PAGE ---------------- */
+.big-contact{
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+/* ---------------- UPDATED FOOTER STYLES ---------------- */
 #page4{
     display: flex;
     flex-direction: column;
@@ -360,6 +311,7 @@ body.scroll-mode #page4{
     justify-content: flex-start;
     gap: 0;
     min-height: 100vh;
+    padding: 0;
 }
 
 #page4 .page4-content{
@@ -367,12 +319,22 @@ body.scroll-mode #page4{
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 40px;
     padding-bottom: 18px;
 }
 
-#page4 .dark-footer{
-    margin-top: auto;
-    width: 100%;
+.dark-footer{
+    text-align: center;
+    padding: 18px 0;
+    background: #111;
+    color: white;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    position: relative;
+    left: 50%;
+    right: 50%;
+    transform: translateX(-50%);
+    flex-shrink: 0;
 }
 
 .contact-lines{
@@ -435,7 +397,7 @@ body.quiz-open .quiz-screen{
     width: min(780px, 92vw);
     margin: 0 auto;
     position: relative;
-    padding: 18px 0 100px;
+    padding: 18px 0 40px;
 }
 
 .quiz-back-btn{
@@ -640,6 +602,10 @@ body.quiz-open .quiz-screen{
     .quiz-q label{ padding: 10px; }
 }
 
+.is-hidden{
+  display: none !important;
+}
+
 /* ---------------- MOBILE RESPONSIVE ---------------- */
 @media (max-width: 768px) {
     .page {
@@ -647,44 +613,20 @@ body.quiz-open .quiz-screen{
         min-height: 100vh;
     }
 
-    .overlay{
-        padding: 22px;
+    #page4 .page4-content{
+        padding: 20px;
+        padding-bottom: 18px;
     }
 
-    .big-title {
-        font-size: 2.25rem;
-    }
-
-    .invite-title{
-        font-size: 1.4rem;
-    }
-
-    .game-hint{
-        font-size: 1.05rem;
-    }
-
-    .two-column {
+    .two-column{
         flex-direction: column;
-        gap: 22px;
-    }
-
-    .two-column .left,
-    .two-column .right {
-        width: 100%;
     }
 
     .spiral-container{
-        height: 320px;
-        padding: 12px;
-        width: min(860px, 96vw);
+        height: 360px;
     }
 
-    .spiral{
-        width: 210px;
-        height: 210px;
+    .big-title{
+        font-size: 30px;
     }
-
-    h1 { font-size: 1.3rem; }
-    h2 { font-size: 1.1rem; }
-    h3 { font-size: 1.15rem; }
 }
