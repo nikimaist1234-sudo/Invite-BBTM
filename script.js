@@ -406,16 +406,24 @@ function showQuizResult({ chosen, guestName }) {
     } catch (e) {}
   }
 
-  // Auto-scroll so the WHOLE reveal is visible
-  setTimeout(() => {
-    // Scroll the result section into view
-    quizResult.scrollIntoView({ behavior: "smooth", block: "start" });
-    
-    // Additional scroll to ensure buttons are visible
-    setTimeout(() => {
-      window.scrollBy({ top: 200, left: 0, behavior: "smooth" });
-    }, 400);
-  }, 100);
+  // FIXED: Wait for display:block to apply, then scroll properly
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      // Scroll the finish button into view first to ensure we're at the bottom of the form
+      quizFinishBtn?.scrollIntoView({ behavior: "smooth", block: "end" });
+      
+      // Then scroll the result into view after a short delay
+      setTimeout(() => {
+        quizResult?.scrollIntoView({ behavior: "smooth", block: "start" });
+        
+        // Additional scroll to ensure buttons are visible below the result
+        setTimeout(() => {
+          const actions = document.querySelector('.quiz-result-actions');
+          actions?.scrollIntoView({ behavior: "smooth", block: "end" });
+        }, 400);
+      }, 300);
+    });
+  });
 }
 
 openQuizBtn?.addEventListener("click", openQuiz);
